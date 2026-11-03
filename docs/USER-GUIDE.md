@@ -13,7 +13,7 @@ RTX 5070 (12 GB) is the physical validation machine. Other supported, mobile and
 
 ## Installation
 
-1. Download **4x4Tools-Setup.exe** from the [official preview release](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0-preview.1). GitHub's Source code ZIP cannot install effects.
+1. Download **4x4Tools-Setup.exe** from the [official community release](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0). GitHub's Source code ZIP cannot install effects.
 2. Save projects and close Premiere, After Effects and Media Encoder. Setup checks GPU support and open Adobe apps before installing.
 3. Review the preview and third-party terms. Choose video, voice, or both.
 4. Setup downloads the selected encrypted runtime/model data from GitHub, checks hashes/authentication and installs matching models. No NVIDIA sign-in occurs. Interrupted downloads can resume on retry.
@@ -21,13 +21,13 @@ RTX 5070 (12 GB) is the physical validation machine. Other supported, mobile and
 
 This preview installer is not code-signed. Published SHA-256 sums help verify release files; they are not a publisher signing certificate. The visible branding and copyright footer belong to 4x4Tools.
 
-### Offline setup
+### Do I need to download anything else?
 
-Download Setup and the release's `.4x4data` assets on a connected machine. Put the data files in a folder named `Data` beside `4x4Tools-Setup.exe`, retaining their filenames. All data assets cover all supported model families; Setup uses only the detected one.
+No. Download **4x4Tools-Setup.exe**, run it and let Setup handle the required application files. The optional checksum verifies the installer; it is not another installation step. Do not download the source-code archive to install the effects.
 
-For a smaller offline set, `release-manifest.json` identifies `plugins-*`, `runtime-*` and `models-<SM>-*` assets for your chosen components. Do not mix releases or extract payloads yourself.
+Some older/support releases contain files with a `.4x4data` extension. These are encrypted application download packages used internally by Setup. You do not choose, open or extract them. They are not an Adobe plugin format.
 
-Online downloads are cached under `%ProgramData%\4x4Tools\Downloads\<version>`. After successful installation, you may remove that version's cache in File Explorer to reclaim space. Keep it for a reinstall; media processing does not need it.
+Initial installation needs internet access. Interrupted downloads resume automatically on retry. Once installed, media processing runs locally without those downloads. Online files are cached under `%ProgramData%\4x4Tools\Downloads\<version>`; the cache can be removed after successful installation to reclaim space.
 
 ## Premiere Pro
 
@@ -78,8 +78,8 @@ Remove **4x4Tools Broadcast Suite** through Windows Installed Apps. The uninstal
 | --- | --- |
 | Setup rejects hardware | Windows x64, supported Tensor Core architecture and current driver |
 | Setup reports open Adobe apps | Save/close Premiere, AE and Media Encoder, then retry |
-| Interrupted download | Rerun to resume, or use offline Data files |
-| Integrity failure | Re-download the named asset; use a consistent release |
+| Interrupted download | Rerun Setup to resume automatically |
+| Integrity failure | Run Setup again to retry the required download |
 | Premiere voice effects missing | Scan/enable VST3 in Audio Plug-In Manager |
 | AE audio missing in a newly installed AE version | Close Adobe and rerun Setup with the same components |
 | Eye Contact unavailable at AE 32 bpc | Use a supported 8/16-bpc workflow |

@@ -128,7 +128,7 @@ extern "C" DllExport PF_Err EffectMain(PF_Cmd command,PF_InData* in,PF_OutData* 
     try {
         switch(command) {
         case PF_Cmd_ABOUT:
-            if(out) std::snprintf(out->return_msg,sizeof(out->return_msg),"%s 0.2.0-preview.1\r4x4Tools | NVIDIA Maxine\rNative After Effects audio; deterministic analysis windows.",FOUR_EFFECT_NAME);break;
+            if(out) std::snprintf(out->return_msg,sizeof(out->return_msg),"%s 0.2.0\r4x4Tools | NVIDIA Maxine\rNative After Effects audio; deterministic analysis windows.",FOUR_EFFECT_NAME);break;
         case PF_Cmd_GLOBAL_SETUP:
             if(!in||!out) return PF_Err_BAD_CALLBACK_PARAM;
             out->my_version=FOUR_VERSION;out->out_flags=FOUR_FLAGS;out->out_flags2=FOUR_FLAGS2;break;

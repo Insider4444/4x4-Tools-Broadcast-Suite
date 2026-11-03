@@ -48,7 +48,7 @@ GPU harnesses are opt-in developer programs. `SuiteGpuTests` expects the built m
 
 Run Steinberg's validator against the built VST3 bundle using the validator executable produced by `-WithVstValidator`. For release acceptance, also stage the exact packaged runtime and repeat relevant host checks against the staged modules.
 
-Manually verify a real Adobe project: apply effects, seek out of order, save/reopen, compare SDR results, render/export, scan voice processors and listen for timing/artifacts. Expand coverage to other supported cards. Keep the [preview status](../QUALITY-REPORT.md) honest.
+Manually verify a real Adobe project: apply effects, seek out of order, save/reopen, compare SDR results, render/export, scan voice processors and listen for timing/artifacts. Expand coverage to other supported cards. Keep the [validation status](../QUALITY-REPORT.md) honest.
 
 ## Build an end-user installer
 
@@ -62,3 +62,5 @@ python -m pip install -r scripts/requirements-release.txt
 `dist/release` contains the branded Setup executable, encrypted data assets, a public manifest, a quick-start file and SHA-256 sums. Only the allowlisted NVIDIA runtime/model subset is included. No SDK headers, Adobe tooling, account credentials or development INIs enter that output.
 
 `package-suite.ps1`, `package_suite.py`, `package.ps1` and `package_runtime.py` are legacy/local offline packaging tools. Their large `dist` bundles are **not** the public release upload set. Use only audited `dist/release` assets for community publication.
+
+The official main community release uses `scripts/package-consumer.ps1` and exposes only Setup plus a checksum. The full encrypted inventory is installer-managed support storage. See [release maintenance](RELEASING.md) for catalog/key requirements.

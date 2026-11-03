@@ -1,4 +1,4 @@
-4x4Tools Broadcast Suite — Preview release terms
+4x4Tools Broadcast Suite — Community release terms
 Copyright (c) 2026 4x4Tools
 
 Select “I Agree” only if you accept the following terms and the NVIDIA license
@@ -23,7 +23,7 @@ server or similar system serving multiple users. Obtain any separately required
 NVIDIA license for uses outside the applicable grants. This installer does not
 grant an Adobe application license or NVIDIA developer-account access.
 
-This preview is provided AS IS, without warranty. Keep project backups and review
+This community release is provided AS IS, without warranty. Keep project backups and review
 processed footage/audio. The expanded suite still needs broader Adobe timeline,
 export and GPU-family acceptance testing. No NVIDIA or Adobe endorsement is claimed.
 

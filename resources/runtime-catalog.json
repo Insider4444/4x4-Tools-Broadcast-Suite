@@ -1,0 +1,1715 @@
+{
+  "schema": 1,
+  "product": "4x4Tools Broadcast Suite",
+  "description": "Immutable installer-managed runtime inventory; no SDKs, models or credentials are stored in source.",
+  "releaseBase": "https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v0.2.0-preview.1",
+  "architectures": {
+    "75": [
+      "75",
+      "turing"
+    ],
+    "86": [
+      "86",
+      "ampere"
+    ],
+    "89": [
+      "89",
+      "ada"
+    ],
+    "120": [
+      "100",
+      "blackwell"
+    ]
+  },
+  "payloads": [
+    {
+      "id": "models-120-audio-01",
+      "file": "Data/models-120-audio-01.4x4data",
+      "asset": "models-120-audio-01.4x4data",
+      "sha256": "b9317b26595ac9dfc92e2fcede3f7d54dca008e81d86a11376ca9ac0684672ed",
+      "bytes": 1733310696,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-120-video-01",
+      "file": "Data/models-120-video-01.4x4data",
+      "asset": "models-120-video-01.4x4data",
+      "sha256": "5c7d31fdbb31b3c0b431ac45b7f7929af0d89e0c55710d73b03ef277ed99d89d",
+      "bytes": 312143896,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-75-audio-01",
+      "file": "Data/models-75-audio-01.4x4data",
+      "asset": "models-75-audio-01.4x4data",
+      "sha256": "23401a9dd29b1e95b3d2325c08faaa477c636953853a498da9d7bd4ffc7422d7",
+      "bytes": 1715977768,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-75-video-01",
+      "file": "Data/models-75-video-01.4x4data",
+      "asset": "models-75-video-01.4x4data",
+      "sha256": "2e0700aa309546b0a5091f1405822ff71dafb8924521d928a111a467144f24fb",
+      "bytes": 258558872,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-86-audio-01",
+      "file": "Data/models-86-audio-01.4x4data",
+      "asset": "models-86-audio-01.4x4data",
+      "sha256": "83bfe5820eae5bb3d849d20edbbf856695d9ef22de3ad779380e83a1f7c0a200",
+      "bytes": 1001560920,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-86-audio-02",
+      "file": "Data/models-86-audio-02.4x4data",
+      "asset": "models-86-audio-02.4x4data",
+      "sha256": "62842ede45eb7297c75c70061fd1ba0e0d9212d85ca2f308ef74343048be3d4d",
+      "bytes": 881643064,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-86-video-01",
+      "file": "Data/models-86-video-01.4x4data",
+      "asset": "models-86-video-01.4x4data",
+      "sha256": "6264c7eeb94c03907e55de2c5266aa81dae55f78cc1ca42afa04b13faf476f19",
+      "bytes": 308128664,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-89-audio-01",
+      "file": "Data/models-89-audio-01.4x4data",
+      "asset": "models-89-audio-01.4x4data",
+      "sha256": "1273354f0b9c2c80146bfa032ab9283aa6ad1d812e035053daeb0aa75b5c3ddb",
+      "bytes": 1718891704,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-89-video-01",
+      "file": "Data/models-89-video-01.4x4data",
+      "asset": "models-89-video-01.4x4data",
+      "sha256": "1641c6d3359c699d6557fc915701a222c9c1923ee2734e8c49b2de19347eee77",
+      "bytes": 274439080,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "plugins-video-01",
+      "file": "Data/plugins-video-01.4x4data",
+      "asset": "plugins-video-01.4x4data",
+      "sha256": "184d96d305f700bef6fb5ec09850287731caa4ab973fdb312795501fc7ccdc3c",
+      "bytes": 1353160,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-audio-01",
+      "file": "Data/runtime-audio-01.4x4data",
+      "asset": "runtime-audio-01.4x4data",
+      "sha256": "05b5879a2fb4a70ab9ab539bfa1722c4876e6f1258892604445345b7cd505f77",
+      "bytes": 1053554680,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-video-01",
+      "file": "Data/runtime-video-01.4x4data",
+      "asset": "runtime-video-01.4x4data",
+      "sha256": "4b6327f89a6ea4a3b35475c58cb4140a9d3538891b3f19e98f1efd561f938777",
+      "bytes": 1255666408,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-video-02",
+      "file": "Data/runtime-video-02.4x4data",
+      "asset": "runtime-video-02.4x4data",
+      "sha256": "c6a05f31e51b045aa4e5ec22f641a792a97e2af35e5c604c75dc3466f18eee14",
+      "bytes": 878580904,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-video-03",
+      "file": "Data/runtime-video-03.4x4data",
+      "asset": "runtime-video-03.4x4data",
+      "sha256": "0f8e7760dbfe47633f1eabde086300281327fd6ec4c56ea8dc4cae7c6ec01bb1",
+      "bytes": 333492360,
+      "encryption": "aes256-cbc-hmac256"
+    }
+  ],
+  "files": [
+    {
+      "path": "runtime/ARSDK/bin/NVCVImage.dll",
+      "payload": "runtime-video-01",
+      "sha256": "028c27e3c59a64de8614f96167059f14d4e49ef09fe7f8e0c13267fe9e94c0ff",
+      "bytes": 2694256,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/ThirdPartyLicenses.txt",
+      "payload": "runtime-video-02",
+      "sha256": "c3d364b6f232769b523673f35bf1511af0770bdb4b44f0313a7b8b4703c4056f",
+      "bytes": 467971,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/cublas64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "baa4668fc3dd16db2a1c090ab754c84668546b22a2dd0bc176579e89cbff41a4",
+      "bytes": 113726576,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/cublasLt64_12.dll",
+      "payload": "runtime-video-02",
+      "sha256": "c34d8eed06c66f959ef992741c7bc6a7fae9e2fa7a343f25b8f8be5056230372",
+      "bytes": 674677872,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/cudart64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "4fc229c06c19446a1530e00691e64b362f94ae1e95c3652e6eae634d2395a8b6",
+      "bytes": 584304,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/cufft64_11.dll",
+      "payload": "runtime-video-01",
+      "sha256": "705328fa0405d1c71f084003c216ae965ac2b90f806c5fe46ed2e6c506dc2a2d",
+      "bytes": 276131952,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/cufftw64_11.dll",
+      "payload": "runtime-video-01",
+      "sha256": "ba8fb030d60c887abd68a766afb5f24d52a7ddb0ee228350665bdf3324c75e25",
+      "bytes": 173680,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/curand64_10.dll",
+      "payload": "runtime-video-01",
+      "sha256": "9f1b5afce5133376804fd6886c48d3c48e6526551f65ba96eb241426c50038c1",
+      "bytes": 71966320,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/external/eigen/COPYING.APACHE.txt",
+      "payload": "plugins-video-01",
+      "sha256": "a724e50ee0e1de4b62c0540d7877c3ef383aa176f55be806df61420aba9b3de6",
+      "bytes": 11564,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/external/eigen/COPYING.BSD.txt",
+      "payload": "plugins-video-01",
+      "sha256": "ee73de74a1980f7f1667f874473393f13bc6a74c87fcee4cc9732bce96bc60cc",
+      "bytes": 1543,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/external/eigen/COPYING.GPL.txt",
+      "payload": "plugins-video-01",
+      "sha256": "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b",
+      "bytes": 35821,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/external/eigen/COPYING.LGPL.txt",
+      "payload": "plugins-video-01",
+      "sha256": "1e7e6bae5a5bde32f1ae5a7c37a082d1ab03cf89354f7f936ac40be9e39a6531",
+      "bytes": 27032,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/external/eigen/COPYING.MINPACK.txt",
+      "payload": "plugins-video-01",
+      "sha256": "37f2b8b54e7bbf107954865cc3cf567385930a1b7031b479909a09968d9db670",
+      "bytes": 2244,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/external/eigen/COPYING.MPL2.txt",
+      "payload": "plugins-video-01",
+      "sha256": "cde215e5b42363eb28ca2462c4558ff4807b38f383c537624c31e44657ac58f4",
+      "bytes": 17099,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/external/eigen/COPYING.README.txt",
+      "payload": "plugins-video-01",
+      "sha256": "4db6561ac96c94942817f0c489282a219e5fd8ed374e2dfd58d85f48aff3ebf9",
+      "bytes": 797,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/libcrypto-3-x64.dll",
+      "payload": "runtime-video-01",
+      "sha256": "b71ed379c395dfa8471442ded5392bd85859a81d48a8dad5528d9bfc878f4553",
+      "bytes": 5175408,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_and_landmark_detector_119_fp32_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "741c35027d8e98052696e8b32183e455188acc3f2678dc051ce18a8682dd6033",
+      "bytes": 21502020,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_and_landmark_detector_119_fp32_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "160618a3ca13557cabd7b4d5099c951b816cd939becdc17d0cd3f5534a22bd71",
+      "bytes": 21854324,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_and_landmark_detector_119_fp32_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "c5df7d28d64c6a950758f1937adcf2f430540063de3b181142c1085dab9d6243",
+      "bytes": 26126260,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_and_landmark_detector_119_fp32_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "ebc717f85b79c05754e98c405e78553662cd3faa61ffe123575258d5f51cfbf6",
+      "bytes": 25104180,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_detection_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "7a74aed3ecc964e32b07718fef007caa6deb8083c08e86e66d5624fd8f59d996",
+      "bytes": 4660676,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_detection_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "e33cb8df35ac7ac731645b1451b7a131debcd853f54c6d646b83e284adcbd28c",
+      "bytes": 3654036,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_detection_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "edd40f69f201dcb8e26081f82e2dcbcab15ba0124094ccc25294b1b92a3d4b00",
+      "bytes": 4889524,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_detection_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "8497698a128878a53acb9076fed8d738c1efde28bddfda86cf9971f5ab9c1c60",
+      "bytes": 4502292,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_model3.mtl",
+      "payload": "runtime-video-01",
+      "sha256": "b0625408332d1d597d1d2c054e9018345be2ebde171ad3a6a734c200e8cc0c59",
+      "bytes": 2117,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/face_model3.nvf",
+      "payload": "runtime-video-01",
+      "sha256": "5c44911b4ec83b085260e0e1c8cf75fc523fcc81893e650a76666c59025fef21",
+      "bytes": 3885012,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode0_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "ac2c457a44adf41063f13c341a6ab368e8704c42a4d29284ed466bcb0d042b25",
+      "bytes": 5468532,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode0_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "9ee9426450c077643bfc345795d36e05eb92d27100b731a8d75ff8aba8231df0",
+      "bytes": 4410356,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode0_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "0146d5086be03aef51ffa77724b532156aedef83d57f9da20f1489b6376c9bce",
+      "bytes": 4321796,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode0_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "4933c6cc274496cf41d5bcd356d4de8d63be9e6a7d0df5d792331fdddc47aeca",
+      "bytes": 5656980,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode1_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "41d3039d44874582fdfc2b64ee3cff28c5c0b7e1d2d4ae25634552397c446499",
+      "bytes": 5839780,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode1_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "339285770ae107ac10fa6d78a20874215028640a82162001ef3c45bd9abbc322",
+      "bytes": 5340820,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode1_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "e0b0a9cbf50bbf3b26c0f2bcdaf1bfcb8fe96921cce95c4d7299416b2e9cf100",
+      "bytes": 5834820,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_126_maxbatch1_mode1_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "7c436dd23daa700aa573bf7b7d1db1fa941946ce8716ef104718b24527c6d0d5",
+      "bytes": 5182388,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode0_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "1af4a4d2af1a853017962541b356de0985454d0f6f25dbd25ff0437348fe9ce4",
+      "bytes": 6510900,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode0_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "b1d27846825123c5fc0de727eae6aa5137899e29e4aa2461371527b72d12665b",
+      "bytes": 4176964,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode0_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "177f03fa6b5962befbb0c857e22a791b872eac07a520a1d276a4297f8b597fe4",
+      "bytes": 5791252,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode0_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "7db3ab0e7dc8ac94088947ead0bb5c6e8bff0b4ca2279e01b80cd1a701416fde",
+      "bytes": 5259476,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode1_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "aaac678294c3172a6dd5a198823fe918dee8c8f80a33a8df98751cca97ed7844",
+      "bytes": 5729300,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode1_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "975e40df50674c21af2d20e004aacb221b4c28a80f05b367f550f5fa5eadb42f",
+      "bytes": 5255460,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode1_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "d1f71bfc4d6fecfe420baa840fcdab27eb7cb072fc58266c42fa4b4a4c85079e",
+      "bytes": 5559252,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/faceland_fp16_rcn_mode1_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "ab151323767074e128ad73573a8b158980910c030e6448d3fe4e64ac1e89b3d9",
+      "bytes": 5459572,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_decoder_fp16_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "c46b7d6ed37b1c2041553f9cf0327c93f4f7647a06d08d52a2e2dd8fedd17552",
+      "bytes": 45548068,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_decoder_fp16_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "0273de1eab7d14095c80e078dd44791a14516963e2b15963ef5dd6a28de54871",
+      "bytes": 44176324,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_decoder_fp16_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "7aa622630debb021c7fc62c8a7f9f1ee8dbf1eb9a2487ae1ff5eaae625a37ed9",
+      "bytes": 44699652,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_decoder_fp16_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "de61a81fd523ec7b9123118e1fe6fb401d5f8c0e8c07f9a8e460c71466911afd",
+      "bytes": 44617268,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_encoder_fp16_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "f1c56b554d1545a27f260d4602726612b273f58bf4d5c50d04fa20af17085293",
+      "bytes": 65006596,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_encoder_fp16_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "734cdb0f15b64483f0fa2fc9969035d1d9510e97660bdbecc1fd17cfa6825e51",
+      "bytes": 35994660,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_encoder_fp16_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "f51b624b55a3b28e39ca071ce5259511638deb404bb6fb3105515938dc3a1a3c",
+      "bytes": 63856564,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/models/gazeredir_encoder_fp16_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "513482d84d4ea4920acd2bed666932b32118733916e55f9a1bcbda2a5db3a18d",
+      "bytes": 35942404,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nppc64_12.dll",
+      "payload": "runtime-video-02",
+      "sha256": "e42a867ce670611efc9c151f842da9634cc81a3b45c972cbce2aacfe5e9845b7",
+      "bytes": 305264,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nppial64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "043d4f7f505453fbeb7e5cf14d234b03729be720169ac6c3e9d2ddd99f4f2409",
+      "bytes": 20513904,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nppidei64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "44acd4deb01c9ec4a892ffa4fb627816e6c620acc67640fd8fc5928bd165abaa",
+      "bytes": 12253296,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nppif64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "014e81839b1d9f46d8b24ffd197320c6680bda8f465d303335e1a036b88c3de4",
+      "bytes": 126658160,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nppig64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "3042cbf36f50a22b04ad0ad354f67076b89af9aa52acdac3232c5b58c3990905",
+      "bytes": 53790320,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nppim64_12.dll",
+      "payload": "runtime-video-02",
+      "sha256": "c0842c1d72526289c5f63f89031a434fa6911239fd7910aeff11a9de80c40865",
+      "bytes": 11838576,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nppist64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "50aff45cc3650d5cb354259a94dee770aae87650fbc945310efaebc21f1b23c8",
+      "bytes": 48560240,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nvARPose.dll",
+      "payload": "runtime-video-02",
+      "sha256": "cb196e4592cba3373f5464f2b94f28f3204e903a2f58e922be676046c7401f39",
+      "bytes": 1703024,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nvinfer_10.dll",
+      "payload": "runtime-video-02",
+      "sha256": "c1941a8dec1cda44a047cb2e66b1afc6fe8464360ed194f01e8786bbf9da3126",
+      "bytes": 440983664,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nvinfer_plugin_10.dll",
+      "payload": "runtime-video-02",
+      "sha256": "bd4015bb71c56eb1319822b782875c87b3b2b67b4a7d4d8a18b2a60157d1d0e2",
+      "bytes": 51002992,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nvonnxparser_10.dll",
+      "payload": "runtime-video-01",
+      "sha256": "988cfb6800860b6c1ab3d4bf9e269f5007e6fa3fef2561cbd84f2af139807daa",
+      "bytes": 2994288,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nvrtc-builtins64_128.dll",
+      "payload": "runtime-video-02",
+      "sha256": "e8aad4c4c184e2954fe41d5518c3ecf98f58868d24c136fbd123cecb1ad6bf42",
+      "bytes": 6366832,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/bin/nvrtc64_120_0.dll",
+      "payload": "runtime-video-02",
+      "sha256": "e9450231d738f280ecec0655c9e206e0be403745dcd054746e342e4a21263024",
+      "bytes": 86738544,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarfaceboxdetection/bin/nvARFaceBoxDetection.dll",
+      "payload": "runtime-video-01",
+      "sha256": "5a1c0ac865e3077c7071a138a1df606de873e0c7ceb9d097254896fa03c6bf63",
+      "bytes": 200304,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarfaceboxdetection/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarfaceboxdetection/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarfaceboxdetection/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvargazeredirection/bin/nvARGazeRedirection.dll",
+      "payload": "runtime-video-02",
+      "sha256": "d79b827eab9246a8e28643eb37adaf46ac947ae086175846d590bce61a6356a7",
+      "bytes": 569456,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvargazeredirection/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvargazeredirection/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvargazeredirection/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarlandmarkdetection/bin/nvARLandmarkDetection.dll",
+      "payload": "runtime-video-01",
+      "sha256": "7dd38a5f2102b4939691e5d7d0b18e351662d9d3ae942ff7396b5551b4e5a88b",
+      "bytes": 161904,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarlandmarkdetection/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarlandmarkdetection/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/features/nvarlandmarkdetection/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/ARSDK/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/AudioFX/bin/NVAudioEffects.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "a23a1e12bf5e49086c5f91bdae64d4937fba3bfcc1215ecf8eb2530f36bf64b2",
+      "bytes": 684656,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/bin/external/ThirdPartyLicenses.txt",
+      "payload": "runtime-audio-01",
+      "sha256": "ae1237f0b0d02ba61390ceaede04455c577d8efb6d6ecc225369f465d6eac3cb",
+      "bytes": 99900,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/bin/external/cuda/bin/cublas64_12.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "a5259771e4801cb52ce76c370bc5ea7b236c12ad9e51ee40ebb08ce4abe82713",
+      "bytes": 113726576,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/bin/external/cuda/bin/cublasLt64_12.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "44c01d743de57f8dde74d867da503df835bbbfd893fa747974eae55a8e86d96e",
+      "bytes": 674677872,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/bin/external/cuda/bin/cufft64_11.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "fdb25473a524cf4dc292185f58eb25dd5eb6b229573c4fda2d27119e99f1279e",
+      "bytes": 276131952,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/bin/external/cuda/bin/nvrtc64_120_0.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "7581bf4bb8a6fbf8947773682026a66874fbb348e1caadfca6e3daf8aaf2d0cf",
+      "bytes": 86738544,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/bin/external/nvtrt/bin/nvinfer_10.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "a664d6f045013a941dc80b45f3377bcaa93536f736eccbf24be9cd7dc879ae21",
+      "bytes": 440983664,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/bin/external/openssl/bin/libcrypto-3-x64.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "61981837c34dbf60e4ed7542efb038716f13a0b29cc9b975222f711c52e7c23d",
+      "bytes": 5175408,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/bin/nvafxdenoiser.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "03f9c2339adc12720f73ef34b32fea76e52e41e68c79fe0d36c6242ea24f0fb8",
+      "bytes": 845936,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/ada/denoiser_48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "b77f814e5df856be84ab94cd27be424647c276aaf3c56da1957130ccc3313caa",
+      "bytes": 32457200,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/ada/denoiser_v2_48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "1839b601ae74bbafcd98e4cf42ceab42cec5abd100f2199f3c938e20b0561f3b",
+      "bytes": 121621456,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/ampere/denoiser_48k.trtpkg",
+      "payload": "models-86-audio-01",
+      "sha256": "c627cf52aaee7a1eee207ab157017c0f016e95003389c61dbbb9a1ae0305b481",
+      "bytes": 32051696,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/ampere/denoiser_v2_48k.trtpkg",
+      "payload": "models-86-audio-01",
+      "sha256": "7d868d60e0f0859a274dc8101afc3f01c73fe3f32445bdfa71956a6e37cb80a5",
+      "bytes": 121141424,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/blackwell/denoiser_48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "b4cc9766b02221c1c9baeb692f64ef5e4709ca0fa87536927851cd643f353d5d",
+      "bytes": 32740752,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/blackwell/denoiser_v2_48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "1938da7e76f841995acb5aa78bbd08d5f531c00ce71c44e4454c043b92f9fd51",
+      "bytes": 122016816,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/turing/denoiser_48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "63fa6321ce4b422ce15e36934312a355cb229905d49e17f2b9e15a7491dba5de",
+      "bytes": 32142496,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdenoiser/models/turing/denoiser_v2_48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "2676cecab71f180d9c4d1c92e28242949f085b3ba339b7e97fb15e41975aee4e",
+      "bytes": 135953008,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/bin/nvafxdereverb.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "22094eb362e30f73a7d76b0ef3ce7b946746105add0469ca48687b22bb33f72d",
+      "bytes": 668272,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/models/ada/dereverb_48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "e3896e21085ddbcf0110a3820d5ef5b44d4a865104b063a40746e450d62008e0",
+      "bytes": 32260672,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/models/ampere/dereverb_48k.trtpkg",
+      "payload": "models-86-audio-01",
+      "sha256": "3ef7977d9cf3b8582c6ed8a59045b074fcd89572a849fa5f83e8679604b0c62c",
+      "bytes": 32053328,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/models/blackwell/dereverb_48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "92de56ba7e01902ca94eeb9e113aedb556dfb60756797f0901763ec97c752471",
+      "bytes": 32797552,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverb/models/turing/dereverb_48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "ade34a4a190f1c90436e47e488f01f39020572b6b40a7062d334542b91b48438",
+      "bytes": 31936144,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/bin/nvafxdereverbdenoiser.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "f80912cd24ea66e1e943864f38b8932ec0a8984f07297a719894c14293f61980",
+      "bytes": 735856,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/models/ada/dereverb_denoiser_48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "c953c17e4dd6cdfcea965f1fd92efaba4521ce59d968c5bc636596719dce68a3",
+      "bytes": 40589744,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/models/ampere/dereverb_denoiser_48k.trtpkg",
+      "payload": "models-86-audio-01",
+      "sha256": "e6650098493137983c7b5704b37e284e5415c908f25cb4a0572abc0454bdd94d",
+      "bytes": 40356800,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/models/blackwell/dereverb_denoiser_48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "b37a7f7338a209f394adb538931653a8c81f419e1b8decddc3a3cc96e740fb6c",
+      "bytes": 41235888,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxdereverbdenoiser/models/turing/dereverb_denoiser_48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "c32868bdd3367df8e76929c8e9a6789aab393ecfd1e9918b22e579d502a3b418",
+      "bytes": 40259792,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/bin/nvafxstudiovoicehighquality.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "69f849891f282e63b3f9511a1f0ffd92fb10ae701c452c15ac52c581cc6e53eb",
+      "bytes": 455280,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/models/ada/studio_voice_high_quality_48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "35492cfe845794ed8592b8534699ace5d0c06e11a367fdf3acc171c67493929c",
+      "bytes": 881045872,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/models/ampere/studio_voice_high_quality_48k.trtpkg",
+      "payload": "models-86-audio-02",
+      "sha256": "fb570887c4481dc087268ca7763ac6b0db4c8e417d695026daa1bb8aee5bdb86",
+      "bytes": 881374816,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/models/blackwell/studio_voice_high_quality_48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "f4ad3e6cad31f725937dc4a88ab8b730e41449c4cc651bcdf177f5b679713046",
+      "bytes": 885148096,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicehighquality/models/turing/studio_voice_high_quality_48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "cebecf3d6fdfca6a76b7a3e2c9953e47abb55c329c825b81598f46716addbd4a",
+      "bytes": 875100576,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/bin/nvafxstudiovoicelowlatency.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "e15be28b922d1f1cef45f6ef4382cedc91209f333b7545c05dfc81f9e9149fcd",
+      "bytes": 646256,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/ada/studio_voice_low_latency_48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "196144dea9bce3f4541cdfbe3fd0c2daccbf095f1c169ddfbe42c3b490e3d30e",
+      "bytes": 608163248,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/ada/studio_voice_mic_profiles_48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "9e9f3afc71671d84581068fd4a882a989dd6e030a048949c08b1ecffb2f495aa",
+      "bytes": 47456,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/ampere/studio_voice_low_latency_48k.trtpkg",
+      "payload": "models-86-audio-01",
+      "sha256": "0b5ed72047ec11c819746b807422f0bd955e4bc6ff300a46f06e27760918ffd0",
+      "bytes": 774370912,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/ampere/studio_voice_mic_profiles_48k.trtpkg",
+      "payload": "models-86-audio-01",
+      "sha256": "b5bda0711ccaa0ebf5325a838b5254512cd060512c1640783be656234d966b20",
+      "bytes": 47456,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/blackwell/studio_voice_low_latency_48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "0ab3d576d3fe159d18b87ccba923c46fd88ca26562993c65eee1ad01b813981f",
+      "bytes": 615585392,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/blackwell/studio_voice_mic_profiles_48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "eaf2cf0cedf8429ab6c7bf5fcd6d26d011433d8bac2f3993c676b9294d66352d",
+      "bytes": 53024,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/turing/studio_voice_low_latency_48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "f6ec8c2a6a71c3202cb010e3c78d0e150edfe12f37b20c53c7790af89defac61",
+      "bytes": 598251648,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxstudiovoicelowlatency/models/turing/studio_voice_mic_profiles_48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "2894091941486e018040bb0371eb1eebdfdb0be2c7a4f5da2ce21a73236aff6e",
+      "bytes": 47200,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/bin/nvafxsuperres.dll",
+      "payload": "runtime-audio-01",
+      "sha256": "5f699f625840e58140c7ea69f7b85779aa2818cc1a6079a1311a56adf06d6e0a",
+      "bytes": 628848,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/license/NVIDIA-Models-Community-License-2025-04-15.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "3074b5b3cd2abcde86b118a4a20055a0c1bad15564042734fb7a08c58e9c6364",
+      "bytes": 114575,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/models/ada/superres_16kto48k.trtpkg",
+      "payload": "models-89-audio-01",
+      "sha256": "575d8b1f5f086cf75dbbf50a240349025bf27911213ee5cdaec2e709c53cc81b",
+      "bytes": 2181904,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/models/ampere/superres_16kto48k.trtpkg",
+      "payload": "models-86-audio-01",
+      "sha256": "b705e61dcb99b291c8ca5ca6177bfb7f824bbea9af3af6b556a8b9ae2b7c57e9",
+      "bytes": 1233376,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/models/blackwell/superres_16kto48k.trtpkg",
+      "payload": "models-120-audio-01",
+      "sha256": "9c0ea860c867a79a268562318d346b758daa267541448a77962708b53921746d",
+      "bytes": 3204640,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/features/nvafxsuperres/models/turing/superres_16kto48k.trtpkg",
+      "payload": "models-75-audio-01",
+      "sha256": "d4f00afa8689cde9b020d04fcb77e4faf993f2cdc388f13be126f492bd5998a9",
+      "bytes": 1763632,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/AudioFX/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-audio-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "audio"
+    },
+    {
+      "path": "runtime/VideoFX/bin/NVCVImage.dll",
+      "payload": "runtime-video-01",
+      "sha256": "afd9b7ad335d78663126b315c50c2a8820c474ce6debeda414dd633acead949d",
+      "bytes": 2694256,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/NVVideoEffects.dll",
+      "payload": "runtime-video-01",
+      "sha256": "2fab7e1c13ef28c2ab8f14d9dfacb5062b7b74374035af7466c58458922ec1be",
+      "bytes": 104560,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/ThirdPartyLicenses.txt",
+      "payload": "runtime-video-01",
+      "sha256": "207b323c79c8d73a1570378597b77dd6ce15d05d0391d9c4d1aef628490bbe70",
+      "bytes": 1383377,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/cublas64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "8d26c17d2cad61b28b263dce7f7c254820e7fdf8afcf95bdf9a4e028e92ff5ad",
+      "bytes": 113726576,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/cublasLt64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "07c0c1fe4e31faa435b7ff699aa2fed1934dc2245a8021930b6a42f11a7e4943",
+      "bytes": 674677872,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/cudart64_12.dll",
+      "payload": "runtime-video-03",
+      "sha256": "f5fb39dab8d8c5e7cf7e6e9b12ec1d27e4a6505a6bce28dd34aa1e9a26b4d9e3",
+      "bytes": 584304,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/libcrypto-3-x64.dll",
+      "payload": "runtime-video-01",
+      "sha256": "27eec9ae6eec79bbc494a265bb6233b416c9c6cd03a14830231292495ad4ec09",
+      "bytes": 5175408,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_100_m0.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "28e728bdac59cf721377e8a0f95807fc59f34b199755a7a9f0442ab74f7ce5bc",
+      "bytes": 21658836,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_100_m1.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "89be3ace92f14d371855c69c5cde75ca3f195e25ea9b205450e8f0cac83c01ac",
+      "bytes": 10276964,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_100_m2.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "8bdfb10e0afe51d51dd4b911db3d3b96f6ab627cb19705cdc73a3f2d8836a999",
+      "bytes": 21498372,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_100_m3.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "87095728854118c154e2b5477404509165eefecd8bb9942afd0a42ba609c741b",
+      "bytes": 9303108,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_75_m0.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "1b04a841ef4f99f81ea719c423e2bbb9d203df53109b4b267fd5d8f1e1dec4f9",
+      "bytes": 19103108,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_75_m1.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "2d97b0039759d02f354b2efa9d8efa6fe446ff27cd0d192922da3420cd83c4a5",
+      "bytes": 7119988,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_75_m2.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "f4c34d412f79f26cb1b3aca369ffe591e29ee32f1e792ed0b1c4047b39a0353a",
+      "bytes": 18777524,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_75_m3.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "c98c30b72985979b7b0a0754e5cf5c02ccdc1512c9036e36dd64f7a093144ad1",
+      "bytes": 6723380,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_86_m0.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "bb1f3c9f187c3a1f0f1935f169e424125012b6fbe2ea5aa13628eb67e3d56220",
+      "bytes": 21032436,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_86_m1.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "c1208517646dafcceb16e3db031f421263d6227c363debbe900d9fd5ca44b674",
+      "bytes": 11491796,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_86_m2.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "b2aafb841fc1507bb86043fe679d76e8546a5f40f979da05c54ddc9d1e3a00bb",
+      "bytes": 20961988,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_86_m3.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "4d3168c7decf690a5e14a2af141306b18b7fbb0d7510357b5553eea0620ec5c0",
+      "bytes": 9241380,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_89_m0.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "81f10eb8f0d4dcf035a7a82f521a28159a98eaaa1ddf447d5f756d3535be27de",
+      "bytes": 19921348,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_89_m1.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "eca50e0ee29a6c21be0c7d10ad6b9eaad371ae462cf93bb018132d92364198aa",
+      "bytes": 8472292,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_89_m2.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "3765be7b6fe0154644dca0fa5ced545fae0ef802b224df1ba6879601cc78cd29",
+      "bytes": 19776548,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/AIGS_288x512_89_m3.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "d519edae451f415c3fb203eaadd1572dc8df9929a50048938bcfad862b2d1670",
+      "bytes": 9951812,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-agg-100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "79643461ee60e40e4e95c461047948c6cd3a5a93be03d689cd86fea2b56f84e1",
+      "bytes": 2402724,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-agg-75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "bd991d3f16b5902a2e46096d30d84192837b559d630689e8fdd5df2f18304973",
+      "bytes": 1148404,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-agg-86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "8f86cc2efb3868b8ea06164f69aa0571a3787e49de8824b99d222eb85c11bdc3",
+      "bytes": 1644916,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-agg-89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "f85e3d04f932a15db4b3effca02cde2dd5175bbe3b5f65fe529c42c36bb5db9c",
+      "bytes": 1311844,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-con-100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "763c3ded389c0e4e882ca0a98e944400cc12c6e82e9951555bb37855c510ffa2",
+      "bytes": 1635588,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-con-75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "2668f0d0581612b39ff331061479c7f222a7c2af0a01a778607ebe55deb9484a",
+      "bytes": 1300788,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-con-86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "42f56705f9766188767caeb5633f503c34f63005823db9383d288d6c1768cf1e",
+      "bytes": 1238772,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/Denoise-con-89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "3cd12dbcbb967005d90d35efe9f5354429d19039193915d537d75aee25aecd94",
+      "bytes": 1369492,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_0thframe_perf_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "652c7f0f6b374abdd6b5fa2a31a16546d3619daa9fecffde46f49b0592d34a8b",
+      "bytes": 42394388,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_0thframe_perf_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "8ce558ec34a7fee29a1c6d81dd84fdad85eaaac9d175a4df0bc0b9c9a5d9c4ba",
+      "bytes": 39371892,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_0thframe_perf_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "5c6585ba83a0f00f35e4f6ecc51b75f78a951fa0e9b96776b1f591babad94c39",
+      "bytes": 40239860,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_0thframe_perf_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "b88ad844fbbd0cec6c5bfacbe1a275e6b6708bbf99e14682c63fae8069b216a9",
+      "bytes": 40513316,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_nthframe_perf_100.engine.trtpkg",
+      "payload": "models-120-video-01",
+      "sha256": "5ea249b1b8d276bb09a9cb2982dbc1745b08255e2c85a29ee76da7dd04b624dc",
+      "bytes": 42609796,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_nthframe_perf_75.engine.trtpkg",
+      "payload": "models-75-video-01",
+      "sha256": "78d617d70b97f91a9d735ce18c2816f00d619eae31641f9b0537383c5df1d609",
+      "bytes": 40068884,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_nthframe_perf_86.engine.trtpkg",
+      "payload": "models-86-video-01",
+      "sha256": "e3d0c052986b2cb3608d047072ccf9ebdf3e469cec06caf3a33588bcbadcc39b",
+      "bytes": 41101364,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/models/relight_nthframe_perf_89.engine.trtpkg",
+      "payload": "models-89-video-01",
+      "sha256": "d49cfa8a615e319403fae48b2b0224f9feb477b065323783595147127c789c31",
+      "bytes": 41311076,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppc64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "232508f8c361af1f55f4b43c10d7688e8f8e7d99b697805b7e8755507f60d9ca",
+      "bytes": 305264,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppial64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "1a1842b326629775c0cc380fcade7fbdff4a35bce06f4c17de4afa631e14c48d",
+      "bytes": 20513904,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppicc64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "953aac71c28670458400883bd2d8d70bf41a579f4d382593be48a8b220e2827f",
+      "bytes": 7891568,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppidei64_12.dll",
+      "payload": "runtime-video-02",
+      "sha256": "f1e3d99c7b704880c78bc855a7eb03b2741b12c5c6851b33d007e0b9015661ad",
+      "bytes": 12253296,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppif64_12.dll",
+      "payload": "runtime-video-03",
+      "sha256": "f8f1e1399164a6fa0e45e1096cfe96ab29c99721991d2fc8cb407d19d7b2c44b",
+      "bytes": 126658160,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppig64_12.dll",
+      "payload": "runtime-video-02",
+      "sha256": "c92c4322fafa8a17d42fc2da9eff73e0214299450c99f92fcf22227c68b3a603",
+      "bytes": 53790320,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppim64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "696cdddbdb0bbea737cda0076c354a6c5e4afa3503b81bf82a7e5adb8c615f02",
+      "bytes": 11838576,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppist64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "a1f2032211c44239e8814a0c0dd9fca25f9e7df1950602cfee292fc23c1c77e3",
+      "bytes": 48560240,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nppitc64_12.dll",
+      "payload": "runtime-video-01",
+      "sha256": "5d6147e7f6c61a8afdbcc942de00618a8fc52f311aa1e4526f28b7e2d08abe87",
+      "bytes": 5294704,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nvinfer_10.dll",
+      "payload": "runtime-video-03",
+      "sha256": "f51fe5abdb8918db99ecc3d48b3be4c42b250f6065d3a546e285715189f2325a",
+      "bytes": 440983664,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nvinfer_plugin_10.dll",
+      "payload": "runtime-video-01",
+      "sha256": "005c81433aa115a7368d7b0c946c39faabbf7cec723cb3e8a752e89459c947e0",
+      "bytes": 51002992,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nvngxruntime.dll",
+      "payload": "runtime-video-01",
+      "sha256": "531878e1c60ce10171ccc4f56bf87060cd5d34ed93a00b198a5fffe04ea42fb5",
+      "bytes": 83568,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nvonnxparser_10.dll",
+      "payload": "runtime-video-01",
+      "sha256": "94283fd602a4d86851fab7567f45073c764be27338138ce899a2d70b18e50931",
+      "bytes": 2994288,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nvrtc-builtins64_128.dll",
+      "payload": "runtime-video-01",
+      "sha256": "773f987999f5ae17c4c398e86bc0e0a04b75c04fc7de12dc49b6763734515006",
+      "bytes": 6366832,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/bin/nvrtc64_120_0.dll",
+      "payload": "runtime-video-02",
+      "sha256": "ec6ebc1f64a95110bd92be94a24523e8396ebfa8089cfc2e85a0798cf2b5bc67",
+      "bytes": 86738544,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxbackgroundblur/bin/nvVFXBackgroundBlur.dll",
+      "payload": "runtime-video-01",
+      "sha256": "106e0c386dd9c56b27d37230622ed1386e569238631bee5a978eb0c1cd0a2858",
+      "bytes": 253040,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxbackgroundblur/license/NVIDIA-Open-Model-License-Agreements-24-10-2025.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "bytes": 79005,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxbackgroundblur/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxbackgroundblur/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxdenoising/bin/nvVFXDenoising.dll",
+      "payload": "runtime-video-01",
+      "sha256": "19cf939c472f1f2a10e4f4928ff273e3d436e7a69d38590bf6ff433b4f3c18e7",
+      "bytes": 316016,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxdenoising/license/NVIDIA-Open-Model-License-Agreements-24-10-2025.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "bytes": 79005,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxdenoising/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxdenoising/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxgreenscreen/bin/nvVFXGreenScreen.dll",
+      "payload": "runtime-video-03",
+      "sha256": "fdd4f5038ff35623c2f27d1141e85edd90bfdef6f3f7a2d46fddaeb610254ffe",
+      "bytes": 1038448,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxgreenscreen/license/NVIDIA-Open-Model-License-Agreements-24-10-2025.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "bytes": 79005,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxgreenscreen/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxgreenscreen/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxrelighting/bin/nvVFXRelighting.dll",
+      "payload": "runtime-video-01",
+      "sha256": "1d1be2cf121f5e74aa19e9133230b13380a8321e0ef09e1de02444924c619ea6",
+      "bytes": 993904,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxrelighting/license/NVIDIA-Open-Model-License-Agreements-24-10-2025.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "bytes": 79005,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxrelighting/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxrelighting/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxupscale/bin/nvVFXUpscale.dll",
+      "payload": "runtime-video-01",
+      "sha256": "55b32c685d2a42350b55d8dfd1d58f715fe002a35f44e9ccee370260d9b698ed",
+      "bytes": 1797232,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxupscale/license/NVIDIA-Open-Model-License-Agreements-24-10-2025.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "bytes": 79005,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxupscale/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxupscale/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxvideosuperres/bin/nvVFXVideoSuperRes.dll",
+      "payload": "runtime-video-01",
+      "sha256": "5ba6ac2a933c3cce56dd202a1780023e405ea57bdc32b85bc7787d44b08c0b3d",
+      "bytes": 42608,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxvideosuperres/bin/nvngx_vsr.dll",
+      "payload": "runtime-video-01",
+      "sha256": "3ed97a8f5dd0afd5ceb9e98b3fa9a868a134f74103b3747e9765595606c3f509",
+      "bytes": 59120752,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxvideosuperres/license/NVIDIA-Open-Model-License-Agreements-24-10-2025.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "bytes": 79005,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxvideosuperres/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/features/nvvfxvideosuperres/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/license/NVIDIA-Open-Model-License-Agreements-24-10-2025.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "4d2fb590aa9b30c47f2058bff17291df7fa2aa0c1bd775a20703da9bb267cfab",
+      "bytes": 79005,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/license/NVIDIA-Software-License-Agreement-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "887d7381eed7cd2e6d9fbfa9c9bbda4e32df20bf506cff79dc5c8dae20ccc531",
+      "bytes": 186823,
+      "component": "video"
+    },
+    {
+      "path": "runtime/VideoFX/license/product-specific-terms-for-nvidia-ai-products-2025.05.05.pdf",
+      "payload": "runtime-video-01",
+      "sha256": "5c755ab1145deb6ce422c2d376f4c3adb55da9f6f2492f35e6d4759e7e3e5499",
+      "bytes": 66627,
+      "component": "video"
+    }
+  ]
+}

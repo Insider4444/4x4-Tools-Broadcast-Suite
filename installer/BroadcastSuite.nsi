@@ -9,6 +9,15 @@ Unicode true
 !ifndef OUTPUT_FILE
  !error "OUTPUT_FILE is required"
 !endif
+!ifndef SUITE_VERSION
+ !define SUITE_VERSION "0.2.0"
+!endif
+!ifndef SUITE_MANIFEST
+ !define SUITE_MANIFEST "${PROJECT_ROOT}\build\release-manifest.json"
+!endif
+!ifndef SUITE_LICENSE
+ !define SUITE_LICENSE "${PROJECT_ROOT}\build\release-license.txt"
+!endif
 Name "4x4Tools Broadcast Suite"
 OutFile "${OUTPUT_FILE}"
 InstallDir "$PROGRAMFILES64\4x4Tools\BroadcastSuite"
@@ -23,11 +32,11 @@ BrandingText "© 2026 4x4Tools"
 SetCompressor /SOLID lzma
 ShowInstDetails show
 ShowUninstDetails show
-VIProductVersion "0.2.0.1"
+VIProductVersion "0.2.0.2"
 VIAddVersionKey /LANG=1033 "ProductName" "4x4Tools Broadcast Suite"
 VIAddVersionKey /LANG=1033 "CompanyName" "4x4Tools"
 VIAddVersionKey /LANG=1033 "FileDescription" "4x4Tools Broadcast Suite Setup"
-VIAddVersionKey /LANG=1033 "FileVersion" "0.2.0.1"
+VIAddVersionKey /LANG=1033 "FileVersion" "0.2.0.2"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 !define MUI_ICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"
 !define MUI_UNICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"
@@ -38,7 +47,7 @@ VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 !define MUI_ABORTWARNING
 !define MUI_WELCOMEPAGE_TITLE "4x4Tools Broadcast Suite"
 !ifdef WEB_RELEASE
- !define MUI_WELCOMEPAGE_TEXT "Bring NVIDIA-accelerated video and voice tools into Adobe.$\r$\n$\r$\nSetup downloads the runtime and models for your supported GPU. No developer account or API key is needed.$\r$\n$\r$\nThis is a preview release. Save and close Adobe apps before continuing."
+ !define MUI_WELCOMEPAGE_TEXT "One installer. Your picture and voice tools, together.$\r$\n$\r$\nSetup checks your NVIDIA GPU, downloads the right models and installs your selected Adobe effects automatically.$\r$\n$\r$\nNo extra files to choose, SDKs to install or developer accounts to sign in to.$\r$\n$\r$\nSave and close Adobe apps before continuing."
 !else
  !define MUI_WELCOMEPAGE_TEXT "Bring NVIDIA-accelerated video and voice tools into Adobe.$\r$\n$\r$\nHighest-quality models and local processing, with separate video and audio components.$\r$\n$\r$\nKeep 4x4Tools-Setup.exe and its Data folder together."
 !endif
@@ -46,7 +55,7 @@ VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 !insertmacro MUI_PAGE_WELCOME
 !ifdef WEB_RELEASE
  !define MUI_LICENSEPAGE_CHECKBOX
- !insertmacro MUI_PAGE_LICENSE "${PROJECT_ROOT}\build\release-license.txt"
+ !insertmacro MUI_PAGE_LICENSE "${SUITE_LICENSE}"
 !endif
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
@@ -71,7 +80,7 @@ Function .onInit
  File /oname=SupportCheck.exe "${PROJECT_ROOT}\build\bin\SupportCheck.exe"
  File /oname=install-suite.ps1 "${PROJECT_ROOT}\installer\install-suite.ps1"
 !ifdef WEB_RELEASE
- File /oname=suite-manifest.json "${PROJECT_ROOT}\build\release-manifest.json"
+ File /oname=suite-manifest.json "${SUITE_MANIFEST}"
  File /oname=payload-crypto.cs "${PROJECT_ROOT}\installer\payload-crypto.cs"
  File /oname=release-key.bin "${PROJECT_ROOT}\build\release-key.bin"
 !else
@@ -111,7 +120,7 @@ Section -Install
  ${ElseIfNot} ${SectionIsSelected} ${SecAudio}
   StrCpy $Components "video"
  ${EndIf}
- DetailPrint "Verifying and installing models for NVIDIA SM$Architecture..."
+ DetailPrint "Downloading and installing your selected 4x4Tools effects..."
 !ifdef WEB_RELEASE
  nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\install-suite.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -KeyFile "$PLUGINSDIR\release-key.bin"'
 !else
@@ -119,13 +128,13 @@ Section -Install
 !endif
  Pop $0
  ${If} $0 != 0
-  MessageBox MB_OK|MB_ICONSTOP "Installation could not finish. Review the details above for the missing payload or installation error."
+  MessageBox MB_OK|MB_ICONSTOP "Setup could not finish. Review the details above, check your internet connection and run Setup again. Interrupted downloads resume automatically."
   SetErrorLevel 1
   Abort
  ${EndIf}
  WriteUninstaller "$INSTDIR\Uninstall.exe"
  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\4x4ToolsBroadcastSuite" "DisplayName" "4x4Tools Broadcast Suite"
- WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\4x4ToolsBroadcastSuite" "DisplayVersion" "0.2.0-preview.1"
+ WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\4x4ToolsBroadcastSuite" "DisplayVersion" "${SUITE_VERSION}"
  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\4x4ToolsBroadcastSuite" "Publisher" "4x4Tools"
  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\4x4ToolsBroadcastSuite" "DisplayIcon" "$INSTDIR\4x4Tools.ico"
  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\4x4ToolsBroadcastSuite" "UninstallString" '$\"$INSTDIR\Uninstall.exe$\"'

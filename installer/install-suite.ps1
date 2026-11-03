@@ -40,7 +40,7 @@ function Hash([string]$Path) {
     try { return ([BitConverter]::ToString($algorithm.ComputeHash($stream))).Replace('-','').ToLowerInvariant() }
     finally { $stream.Dispose();$algorithm.Dispose() }
 }
-function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes) {
+function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes,[string]$Label='Required files') {
     # GitHub/CDN requests carry no credentials. A partial download can resume
     # after an interrupted connection; the embedded SHA-256 remains authoritative.
     [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
@@ -65,7 +65,16 @@ function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes) {
             $mode=if($append){[IO.FileMode]::Append}else{[IO.FileMode]::Create}
             NoReparse $Target;NoReparse $partial
             $output=[IO.File]::Open($partial,$mode,[IO.FileAccess]::Write,[IO.FileShare]::None)
-            $input=$response.GetResponseStream();$input.CopyTo($output)
+            $input=$response.GetResponseStream()
+            $buffer=[Array]::CreateInstance([byte],1048576)
+            $done=if($append){$offset}else{0L};$lastReport=[DateTime]::UtcNow
+            while(($read=$input.Read($buffer,0,$buffer.Length)) -gt 0) {
+                $output.Write($buffer,0,$read);$done+=$read
+                if(([DateTime]::UtcNow-$lastReport).TotalSeconds -ge 5) {
+                    Write-Output ("{0}: {1:N0} of {2:N0} MB ({3:N0}%)" -f $Label,($done/1MB),($ExpectedBytes/1MB),(100*$done/$ExpectedBytes))
+                    $lastReport=[DateTime]::UtcNow
+                }
+            }
             $output.Dispose();$output=$null
             $received=(Get-Item -LiteralPath $partial).Length
             if($received -ne $ExpectedBytes) {
@@ -76,11 +85,22 @@ function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes) {
             Move-Item -LiteralPath $partial -Destination $Target
             return
         } catch {
-            if($attempt -eq 3) {throw "Download failed. Rerun Setup to resume, or place release data files in a Data folder beside Setup. $($_.Exception.Message)"}
+            if($attempt -eq 3) {throw "The download could not finish. Check your connection and run Setup again to resume automatically. $($_.Exception.Message)"}
             Write-Output "Connection interrupted; resuming download (attempt $($attempt+1)/3)..."
         } finally {
             if($input){$input.Dispose()};if($output){$output.Dispose()};if($response){$response.Dispose()}
         }
+    }
+}
+function PayloadLabel([string]$Id) {
+    switch -Regex ($Id) {
+        '^models-.*-audio' {return 'Voice enhancement models'}
+        '^models-.*-video' {return 'Picture enhancement models'}
+        '^runtime-audio' {return 'NVIDIA voice processing libraries'}
+        '^runtime-video' {return 'NVIDIA picture processing libraries'}
+        '^plugins-audio' {return '4x4Tools voice effects'}
+        '^plugins-video' {return '4x4Tools picture effects'}
+        default {return 'Shared application files'}
     }
 }
 function WriteIni([string]$Directory,[string]$Runtime) {
@@ -161,7 +181,8 @@ $payloads=@($data.payloads | Where-Object { @($selected.payload) -contains $_.id
 $archives=@{}
 Write-Output 'Preparing and verifying the selected payloads...'
 foreach ($payload in $payloads) {
-    Write-Output "Checking $($payload.file)..."
+    $label=PayloadLabel $payload.id
+    Write-Output "Preparing $label..."
     $archive=Child $PackageRoot $payload.file
     NoReparse $archive
     if($encrypted -and !(Test-Path -LiteralPath $archive)) {
@@ -174,12 +195,12 @@ foreach ($payload in $payloads) {
             Remove-Item -LiteralPath $archive -Force
         }
         if(!(Test-Path -LiteralPath $archive)) {
-            Write-Output "Downloading $($payload.asset) ($([Math]::Round($payload.bytes/1MB)) MB)..."
-            DownloadPayload ($data.releaseBase+'/'+$payload.asset) $archive ([long]$payload.bytes)
+            Write-Output "Downloading $label ($([Math]::Round($payload.bytes/1MB)) MB)..."
+            DownloadPayload ($data.releaseBase+'/'+$payload.asset) $archive ([long]$payload.bytes) $label
         }
     }
     if (!(Test-Path -LiteralPath $archive) -or (Get-Item -LiteralPath $archive).Length -ne [long]$payload.bytes -or (Hash $archive) -ne $payload.sha256) {
-        throw "Package integrity check failed: $($payload.file). Re-download that release asset before retrying."
+        throw "Required files could not be verified ($label). Run Setup again to retry the download automatically."
     }
     $archives[$payload.id]=$archive
 }
@@ -206,13 +227,12 @@ $blobs=Child $stage '.payload-blobs'; $null=New-Item -ItemType Directory -Path $
 Write-Output 'Unpacking verified NVIDIA runtimes and models...'
 $blobFiles=@{}
 foreach ($payload in $payloads) {
-    Write-Output "Unpacking $($payload.file)..."
+    Write-Output "Installing $(PayloadLabel $payload.id)..."
     $needed=@{}
     foreach ($file in @($selected | Where-Object {$_.payload -eq $payload.id})) { $needed[$file.sha256]=[long]$file.bytes }
     $archive=$archives[$payload.id];$plain=$null
     if($encrypted) {
         $plain=Child $blobs ($payload.id+'.zip')
-        Write-Output 'Authenticating and opening the encrypted payload...'
         [FourByFour.PayloadCrypto]::Decrypt($archive,$plain,[IO.File]::ReadAllBytes($KeyFile))
         $archive=$plain
     }

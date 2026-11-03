@@ -1,13 +1,13 @@
 <p align="center"><img src="docs/assets/hero.svg?v=2" alt="4x4-Tools Broadcast Suite — Your edit. Better presence. NVIDIA-accelerated picture and voice for Premiere Pro and After Effects." width="100%"></p>
 
 <p align="center">
-  <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0-preview.1"><img alt="Download preview" src="https://img.shields.io/badge/Download-0.2.0_Preview_1-b8f558?style=for-the-badge&labelColor=151e29"></a>
+  <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0"><img alt="Download for Windows" src="https://img.shields.io/badge/Download-0.2.0-b8f558?style=for-the-badge&labelColor=151e29"></a>
   <a href="LICENSE"><img alt="Source license MIT" src="https://img.shields.io/badge/Source-MIT-e5eaf2?style=for-the-badge&labelColor=151e29"></a>
   <img alt="Windows x64 and NVIDIA RTX" src="https://img.shields.io/badge/Windows_x64-NVIDIA_RTX-76b900?style=for-the-badge&labelColor=151e29">
   <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/actions/workflows/checks.yml"><img alt="Source and core checks" src="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/actions/workflows/checks.yml/badge.svg"></a>
 </p>
 
-<p align="center"><a href="#start-here">Install</a> · <a href="#the-toolkit">Explore the effects</a> · <a href="docs/USER-GUIDE.md">User guide</a> · <a href="SDK-SETUP.md">Build it yourself</a> · <a href="QUALITY-REPORT.md">Preview status</a></p>
+<p align="center"><a href="#start-here">Install</a> · <a href="#the-toolkit">Explore the effects</a> · <a href="docs/USER-GUIDE.md">User guide</a> · <a href="SDK-SETUP.md">Build it yourself</a> · <a href="QUALITY-REPORT.md">Validation status</a></p>
 
 # Your edit. Better presence.
 
@@ -15,17 +15,19 @@
 
 If you have seen NVIDIA Broadcast clean up a webcam and microphone, this project brings related SDK capabilities to **recorded clips, layers and audio inside your editor**. Apply an effect, adjust its controls and render with your project. The NVIDIA Broadcast app does not need to be installed.
 
-> **Community preview — 0.2.0 Preview 1.** Eye Contact has been user-tested in After Effects. The expanded suite has local integration checks; wider Adobe timeline, export and GPU-family testing is still needed. Read the [validation scope](QUALITY-REPORT.md) before production use.
+> **Initial community release — 0.2.0.** Eye Contact has been user-tested in After Effects. The expanded suite has local integration checks; wider Adobe timeline, export and GPU-family testing is still needed. Read the [validation scope](QUALITY-REPORT.md) before production use.
 
 ## Start here
 
-**Editing a video?** Download [**4x4Tools-Setup.exe**](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v0.2.0-preview.1/4x4Tools-Setup.exe) from the [official preview release](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0-preview.1).
+**[Visit the download website](https://tools-4x4-broadcast.triplebream4.chatgpt.site/)** · **[Download for Windows](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/latest/download/4x4Tools-Setup.exe)**
+
+Download **one file: `4x4Tools-Setup.exe`**. Setup downloads and installs the matching NVIDIA libraries and models automatically. No other files to choose or unpack.
 
 1. Save projects and close Premiere Pro, After Effects and Media Encoder.
 2. Run Setup, review the terms and choose video tools, voice tools, or both. Setup checks GPU support first and downloads the matching runtime/models. **No SDK, NVIDIA developer account or API key is needed.**
 3. Open Adobe. Find video effects under **4x4Tools**. In Premiere's **Audio Plug-In Manager**, scan VST3 effects to enable the voice tools. After Effects receives native audio effects.
 
-The runtime download is several gigabytes; the exact size depends on your GPU and components. Processing then runs locally. Offline setup also works: put the release's `.4x4data` assets in a `Data` folder beside Setup. See the [user guide](docs/USER-GUIDE.md#installation).
+Initial setup needs internet access and downloads several gigabytes, depending on the GPU and components you choose. **You do not download model files yourself.** After setup, processing runs locally. The main release contains the installer and an optional checksum; older support-storage releases are managed by Setup. See the [user guide](docs/USER-GUIDE.md#installation).
 
 **Developing the plugin?** Clone the source, then follow [SDK setup](SDK-SETUP.md) and the [build guide](docs/BUILD.md). Bring your own Adobe/NVIDIA SDKs, models and credentials. **None of those are in this repository.**
 
@@ -68,7 +70,7 @@ These are integration choices around NVIDIA's models. They do not establish bett
 
 ## Compatibility at a glance
 
-| Area | This preview |
+| Area | This release |
 | :--- | :--- |
 | Platform | Windows x64; current NVIDIA driver exposing CUDA driver API 12.8 or newer |
 | GPU model families | Tensor Core SM75, SM86, SM89 and SM120; RTX 20/30/40/50 are the consumer targets |
@@ -83,7 +85,7 @@ GTX, AMD/Intel GPUs, Windows on Arm and macOS are unsupported. Compute capabilit
 
 Eye Contact and Auto Frame target a single visible person. Hair, occlusions, fast motion and difficult lighting need review. Detail Restore keeps Adobe frame dimensions; CLI tools provide actual enlargement. Studio Voice may change timing/phase: begin at 100% wet. Highest Quality can be substantially slower than preview.
 
-Speaker Focus, NVIDIA Broadcast's application UI, virtual camera routing, acoustic echo cancellation, frame generation and TrueHDR are not included. See [FAQ](docs/FAQ.md) and [preview status](QUALITY-REPORT.md).
+Speaker Focus, NVIDIA Broadcast's application UI, virtual camera routing, acoustic echo cancellation, frame generation and TrueHDR are not included. See [FAQ](docs/FAQ.md) and [validation status](QUALITY-REPORT.md).
 
 ## Open source, clear dependency boundaries
 

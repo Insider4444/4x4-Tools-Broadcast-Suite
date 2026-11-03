@@ -83,7 +83,7 @@ extern "C" DllExport PF_Err EffectMain(PF_Cmd command, PF_InData* in_data, PF_Ou
         switch (command) {
         case PF_Cmd_ABOUT:
             if (!out_data) return PF_Err_BAD_CALLBACK_PARAM;
-            std::strcpy(out_data->return_msg, "4x4 Eye Contact 0.1.0-dev.1\rNVIDIA-accelerated gaze correction.\rDevelopment preview; single subject; SDR model processing.");
+            std::strcpy(out_data->return_msg, "4x4 Eye Contact 0.2.0\rNVIDIA-accelerated gaze correction.\r4x4Tools community release; single subject; SDR model processing.");
             break;
         case PF_Cmd_GLOBAL_SETUP:
             if (!out_data || !in_data) return PF_Err_BAD_CALLBACK_PARAM;

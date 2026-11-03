@@ -1,6 +1,6 @@
 # Bring your own SDKs
 
-This guide is for developers. Editors using the official [4x4Tools release](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0-preview.1) do not need developer accounts or SDK downloads.
+This guide is for developers. Editors using the official [4x4Tools release](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0) do not need developer accounts or SDK downloads.
 
 No Adobe SDK, NVIDIA SDK, models, account downloads or credentials are committed here. Obtain them from the vendors under your own accounts and terms. Do not submit SDKs or unpacked release payloads with a contribution.
 

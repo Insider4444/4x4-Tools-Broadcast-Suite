@@ -13,7 +13,9 @@ jobs:
         with:
           python-version: '3.11'
       - name: Public source audit
-        run: python scripts/audit-public.py
+        run: |
+          python scripts/audit-public.py
+          node --check website/dist/app.js
       - name: Configure without vendor SDKs
         run: cmake -S . -B build/core-only -A x64 -DFOUR_CORE_ONLY=ON
       - name: Build and test core

@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {'.md', '.txt', '.json', '.yml', '.yaml', '.ps1', '.py', '.cpp', '.h', '.cs', '.nsi',
            '.r', '.rc', '.ico', '.bmp', '.svg', '.html', '.css', '.js'}
 SPECIAL = {'LICENSE', '.gitignore', '.gitattributes'}
+WEBSITE = {'website/dist/index.html','website/dist/styles.css','website/dist/app.js','website/dist/assets/mark.svg'}
 PRIVATE = re.compile(r'(^|/)(build|dist|artifacts|third_party|\.tools|\.ngc|sdks?|dependencies)(/|$)|'
                      r'(^|/)(ARSDK_windows_|VFXSDK_windows_|[^/]*NVIDIA_AFX_SDK)|'
                      r'(^|/)(sdk-paths\.local\.json|release-key\.[^/]+|\.env[^/]*)(/|$)', re.I)
@@ -37,7 +38,7 @@ def main():
     errors = []
     for name in names:
         p = ROOT / name
-        if name != '.env.example' and PRIVATE.search(name):
+        if name != '.env.example' and name not in WEBSITE and PRIVATE.search(name):
             errors.append((name, 'private/dependency path'))
         if p.suffix.lower() not in ALLOWED and p.name not in SPECIAL and name != '.env.example':
             errors.append((name, 'unexpected file type'))
