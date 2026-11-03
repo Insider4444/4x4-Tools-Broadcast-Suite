@@ -2,7 +2,7 @@
   "schema": 1,
   "product": "4x4Tools Broadcast Suite",
   "description": "Immutable installer-managed runtime inventory; no SDKs, models or credentials are stored in source.",
-  "releaseBase": "https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v0.2.0-preview.1",
+  "releaseBase": "https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v0.2.0-runtime",
   "architectures": {
     "75": [
       "75",

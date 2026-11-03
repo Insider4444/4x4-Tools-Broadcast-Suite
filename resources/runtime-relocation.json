@@ -1,0 +1,118 @@
+{
+  "sourceBase": "https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v0.2.0-preview.1",
+  "tag": "v0.2.0-runtime",
+  "assets": [
+    {
+      "id": "models-120-audio-01",
+      "file": "Data/models-120-audio-01.4x4data",
+      "asset": "models-120-audio-01.4x4data",
+      "sha256": "b9317b26595ac9dfc92e2fcede3f7d54dca008e81d86a11376ca9ac0684672ed",
+      "bytes": 1733310696,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-120-video-01",
+      "file": "Data/models-120-video-01.4x4data",
+      "asset": "models-120-video-01.4x4data",
+      "sha256": "5c7d31fdbb31b3c0b431ac45b7f7929af0d89e0c55710d73b03ef277ed99d89d",
+      "bytes": 312143896,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-75-audio-01",
+      "file": "Data/models-75-audio-01.4x4data",
+      "asset": "models-75-audio-01.4x4data",
+      "sha256": "23401a9dd29b1e95b3d2325c08faaa477c636953853a498da9d7bd4ffc7422d7",
+      "bytes": 1715977768,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-75-video-01",
+      "file": "Data/models-75-video-01.4x4data",
+      "asset": "models-75-video-01.4x4data",
+      "sha256": "2e0700aa309546b0a5091f1405822ff71dafb8924521d928a111a467144f24fb",
+      "bytes": 258558872,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-86-audio-01",
+      "file": "Data/models-86-audio-01.4x4data",
+      "asset": "models-86-audio-01.4x4data",
+      "sha256": "83bfe5820eae5bb3d849d20edbbf856695d9ef22de3ad779380e83a1f7c0a200",
+      "bytes": 1001560920,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-86-audio-02",
+      "file": "Data/models-86-audio-02.4x4data",
+      "asset": "models-86-audio-02.4x4data",
+      "sha256": "62842ede45eb7297c75c70061fd1ba0e0d9212d85ca2f308ef74343048be3d4d",
+      "bytes": 881643064,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-86-video-01",
+      "file": "Data/models-86-video-01.4x4data",
+      "asset": "models-86-video-01.4x4data",
+      "sha256": "6264c7eeb94c03907e55de2c5266aa81dae55f78cc1ca42afa04b13faf476f19",
+      "bytes": 308128664,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-89-audio-01",
+      "file": "Data/models-89-audio-01.4x4data",
+      "asset": "models-89-audio-01.4x4data",
+      "sha256": "1273354f0b9c2c80146bfa032ab9283aa6ad1d812e035053daeb0aa75b5c3ddb",
+      "bytes": 1718891704,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "models-89-video-01",
+      "file": "Data/models-89-video-01.4x4data",
+      "asset": "models-89-video-01.4x4data",
+      "sha256": "1641c6d3359c699d6557fc915701a222c9c1923ee2734e8c49b2de19347eee77",
+      "bytes": 274439080,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "plugins-video-01",
+      "file": "Data/plugins-video-01.4x4data",
+      "asset": "plugins-video-01.4x4data",
+      "sha256": "184d96d305f700bef6fb5ec09850287731caa4ab973fdb312795501fc7ccdc3c",
+      "bytes": 1353160,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-audio-01",
+      "file": "Data/runtime-audio-01.4x4data",
+      "asset": "runtime-audio-01.4x4data",
+      "sha256": "05b5879a2fb4a70ab9ab539bfa1722c4876e6f1258892604445345b7cd505f77",
+      "bytes": 1053554680,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-video-01",
+      "file": "Data/runtime-video-01.4x4data",
+      "asset": "runtime-video-01.4x4data",
+      "sha256": "4b6327f89a6ea4a3b35475c58cb4140a9d3538891b3f19e98f1efd561f938777",
+      "bytes": 1255666408,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-video-02",
+      "file": "Data/runtime-video-02.4x4data",
+      "asset": "runtime-video-02.4x4data",
+      "sha256": "c6a05f31e51b045aa4e5ec22f641a792a97e2af35e5c604c75dc3466f18eee14",
+      "bytes": 878580904,
+      "encryption": "aes256-cbc-hmac256"
+    },
+    {
+      "id": "runtime-video-03",
+      "file": "Data/runtime-video-03.4x4data",
+      "asset": "runtime-video-03.4x4data",
+      "sha256": "0f8e7760dbfe47633f1eabde086300281327fd6ec4c56ea8dc4cae7c6ec01bb1",
+      "bytes": 333492360,
+      "encryption": "aes256-cbc-hmac256"
+    }
+  ]
+}

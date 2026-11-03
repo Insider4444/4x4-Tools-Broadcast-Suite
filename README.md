@@ -19,7 +19,7 @@ If you have seen NVIDIA Broadcast clean up a webcam and microphone, this project
 
 ## Start here
 
-**[Visit the download website](https://tools-4x4-broadcast.triplebream4.chatgpt.site/)** · **[Download for Windows](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/latest/download/4x4Tools-Setup.exe)**
+**[Visit the download website](https://insider4444.github.io/4x4-Tools-Broadcast-Suite/)** · **[Download for Windows](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/latest/download/4x4Tools-Setup.exe)**
 
 Download **one file: `4x4Tools-Setup.exe`**. Setup downloads and installs the matching NVIDIA libraries and models automatically. No other files to choose or unpack.
 
@@ -27,7 +27,7 @@ Download **one file: `4x4Tools-Setup.exe`**. Setup downloads and installs the ma
 2. Run Setup, review the terms and choose video tools, voice tools, or both. Setup checks GPU support first and downloads the matching runtime/models. **No SDK, NVIDIA developer account or API key is needed.**
 3. Open Adobe. Find video effects under **4x4Tools**. In Premiere's **Audio Plug-In Manager**, scan VST3 effects to enable the voice tools. After Effects receives native audio effects.
 
-Initial setup needs internet access and downloads several gigabytes, depending on the GPU and components you choose. **You do not download model files yourself.** After setup, processing runs locally. The main release contains the installer and an optional checksum; older support-storage releases are managed by Setup. See the [user guide](docs/USER-GUIDE.md#installation).
+Initial setup needs internet access and downloads several gigabytes, depending on the GPU and components you choose. **You do not download model files yourself.** After setup, processing runs locally. The main release contains the installer and an optional checksum; separate Setup-managed support storage are managed by Setup. See the [user guide](docs/USER-GUIDE.md#installation).
 
 **Developing the plugin?** Clone the source, then follow [SDK setup](SDK-SETUP.md) and the [build guide](docs/BUILD.md). Bring your own Adobe/NVIDIA SDKs, models and credentials. **None of those are in this repository.**
 

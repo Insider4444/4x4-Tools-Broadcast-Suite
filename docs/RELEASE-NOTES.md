@@ -4,7 +4,7 @@
 
 Save/close Adobe apps, run Setup, review the terms and choose video tools, voice tools, or both. Setup checks your NVIDIA GPU and automatically downloads, verifies and installs the matching application libraries/models. **No extra files to choose, SDKs to install or developer accounts to sign in to.**
 
-[Download website](https://tools-4x4-broadcast.triplebream4.chatgpt.site/) · [User guide](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/blob/main/docs/USER-GUIDE.md) · [Get help](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/issues/new/choose)
+[Download website](https://insider4444.github.io/4x4-Tools-Broadcast-Suite/) · [User guide](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/blob/main/docs/USER-GUIDE.md) · [Get help](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/issues/new/choose)
 
 ## What's included
 

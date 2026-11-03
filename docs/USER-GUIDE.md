@@ -25,7 +25,7 @@ This preview installer is not code-signed. Published SHA-256 sums help verify re
 
 No. Download **4x4Tools-Setup.exe**, run it and let Setup handle the required application files. The optional checksum verifies the installer; it is not another installation step. Do not download the source-code archive to install the effects.
 
-Some older/support releases contain files with a `.4x4data` extension. These are encrypted application download packages used internally by Setup. You do not choose, open or extract them. They are not an Adobe plugin format.
+The separate Setup-managed support storage contain files with a `.4x4data` extension. These are encrypted application download packages used internally by Setup. You do not choose, open or extract them. They are not an Adobe plugin format.
 
 Initial installation needs internet access. Interrupted downloads resume automatically on retry. Once installed, media processing runs locally without those downloads. Online files are cached under `%ProgramData%\4x4Tools\Downloads\<version>`; the cache can be removed after successful installation to reclaim space.
 
