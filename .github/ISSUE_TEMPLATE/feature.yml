@@ -1,0 +1,15 @@
+name: Feature or compatibility request
+description: Suggest a focused improvement
+title: "[Request]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What editing problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed behavior and relevant host/hardware
+      description: Do not post SDK downloads, account credentials or models.

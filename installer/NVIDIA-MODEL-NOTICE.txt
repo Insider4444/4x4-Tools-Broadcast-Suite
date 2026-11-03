@@ -1,0 +1,8 @@
+NVIDIA model attribution
+
+Licensed by NVIDIA Corporation under the NVIDIA Open Model License.
+
+This notice applies to models supplied under that license. Other included models
+are governed by the NVIDIA Community Model License supplied beside their feature.
+The applicable agreement accompanies each NVIDIA feature's license directory.
+No NVIDIA model is relicensed under the MIT License used for 4x4Tools source.

@@ -1,0 +1,32 @@
+name: Bug report
+description: Reproduce an Adobe, audio or setup problem
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Do not attach keys, SDKs, models or private media. Use private security reporting for sensitive issues."
+  - type: input
+    id: versions
+    attributes:
+      label: Suite, Adobe and Windows versions
+      placeholder: "0.2.0 Preview 1; After Effects 2026; Windows 11"
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU, VRAM and NVIDIA driver
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps, effect/settings and expected vs actual result
+      description: Include frame size/color depth or audio sample rate/channels where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Safe diagnostics or screenshots
+      description: Redact account details; attach only media you may publish.

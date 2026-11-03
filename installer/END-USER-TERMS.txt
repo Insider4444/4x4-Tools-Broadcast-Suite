@@ -1,0 +1,36 @@
+4x4Tools Broadcast Suite — Preview release terms
+Copyright (c) 2026 4x4Tools
+
+Select “I Agree” only if you accept the following terms and the NVIDIA license
+agreements reproduced below. If you do not agree, cancel Setup.
+
+4x4Tools source code is provided under the MIT License. NVIDIA runtime libraries,
+models and their third-party dependencies are separate components and remain
+subject to their respective licenses. They are not relicensed under MIT.
+
+You receive the NVIDIA components solely as part of this compatible 4x4Tools
+application for their authorized purposes on supported NVIDIA hardware. All
+applicable grants, limitations, intellectual-property protections, acceptable-use
+terms, warranty disclaimers and liability limitations in the following NVIDIA
+agreements apply to your use. Do not remove or alter ownership notices, bypass
+NVIDIA security/authentication, or reverse engineer NVIDIA binary components
+except where applicable law expressly permits it. Nothing here restricts rights
+granted by an applicable open-source or NVIDIA model license.
+
+Models governed by the NVIDIA Community Model License are intended here for
+local use on an RTX/GeForce RTX PC or workstation, not a commercial kiosk,
+server or similar system serving multiple users. Obtain any separately required
+NVIDIA license for uses outside the applicable grants. This installer does not
+grant an Adobe application license or NVIDIA developer-account access.
+
+This preview is provided AS IS, without warranty. Keep project backups and review
+processed footage/audio. The expanded suite still needs broader Adobe timeline,
+export and GPU-family acceptance testing. No NVIDIA or Adobe endorsement is claimed.
+
+Setup downloads version-pinned encrypted payloads from this project's GitHub
+release and verifies them before installation. Processing runs locally. No NGC
+API key is required or collected. Encryption is a packaging envelope; installed
+runtime files must be readable by the effects and are not confidential or DRM.
+
+The exact supplied NVIDIA agreements follow. Copies and third-party notices are
+also retained in the installed runtime/feature license folders.

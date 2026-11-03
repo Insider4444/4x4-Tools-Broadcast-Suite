@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="530" viewBox="0 0 1280 530" role="img" aria-labelledby="title desc">
+ <title id="title">4x4Tools Broadcast Suite — Your edit. Better presence.</title>
+ <desc id="desc">NVIDIA accelerated picture and voice tools for Premiere Pro and After Effects. A stylized timeline illustrates the workflow.</desc>
+ <defs>
+  <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#132238"/><stop offset="1" stop-color="#080e17"/></linearGradient>
+  <linearGradient id="panel" x2="1" y2="1"><stop stop-color="#36576a"/><stop offset="1" stop-color="#172d42"/></linearGradient>
+  <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#293c51" stroke-width=".6"/></pattern>
+ </defs>
+ <rect width="1280" height="530" rx="22" fill="url(#bg)"/>
+ <rect width="1280" height="530" rx="22" fill="url(#grid)" opacity=".6"/>
+ <path d="M36 32H1244" stroke="#b8f558" stroke-width="2" opacity=".7"/>
+ <rect x="55" y="62" width="41" height="41" rx="9" fill="#b8f558"/>
+ <path d="M63 71v10h10V71m5 0v10h10V71M63 86v10h10V86m5 0v10h10V86" fill="none" stroke="#101c2c" stroke-width="3"/>
+ <g font-family="Segoe UI,Arial,sans-serif">
+  <text x="110" y="90" fill="#eff5fc" font-weight="700" font-size="24" letter-spacing="2">4x4Tools</text>
+  <text x="56" y="151" fill="#b8f558" font-size="14" font-weight="600" letter-spacing="4">BROADCAST SUITE</text>
+  <g fill="#f4f7fd" font-size="58" font-weight="700" letter-spacing="-2"><text x="52" y="219">Your edit.</text><text x="52" y="284">Better presence.</text></g>
+  <g fill="#b3c4d7" font-size="19"><text x="56" y="333">NVIDIA-accelerated picture + voice.</text><text x="56" y="362">Right inside your Adobe timeline.</text></g>
+  <rect x="56" y="398" width="159" height="34" rx="17" fill="#b8f558"/>
+  <text x="135" y="420" text-anchor="middle" fill="#0c171c" font-size="12" font-weight="700" letter-spacing="1">7 VIDEO EFFECTS</text>
+  <rect x="228" y="398" width="161" height="34" rx="17" fill="#2a3c52"/>
+  <text x="308" y="420" text-anchor="middle" fill="#e4edf9" font-size="12" font-weight="700" letter-spacing="1">6 VOICE TOOLS</text>
+ </g>
+ <rect x="678" y="95" width="548" height="317" rx="16" fill="#0a111d" stroke="#405772"/>
+ <path d="M695 122H1209" stroke="#2a3c52"/>
+ <circle cx="700" cy="110" r="3" fill="#b8f558"/><circle cx="713" cy="110" r="3" fill="#4c6078"/><circle cx="726" cy="110" r="3" fill="#4c6078"/>
+ <text x="1208" y="113" text-anchor="end" fill="#9db1c8" font-family="Segoe UI,Arial,sans-serif" font-size="9" letter-spacing="2">YOUR CREATIVE WORKSPACE</text>
+ <rect x="697" y="139" width="303" height="155" rx="8" fill="url(#panel)"/>
+ <path d="M699 270L777 183 848 244 919 165 998 249V294H699Z" fill="#3e6976" opacity=".4"/>
+ <circle cx="849" cy="187" r="26" fill="#a4bec6"/>
+ <path d="M796 279v-22c0-24 21-36 53-36s53 12 53 36v22" fill="#668f98"/>
+ <path d="M794 154h17m-17 0v17m110-17h-17m17 0v17M794 279h17m-17 0v-17m110 17h-17m17 0v-17" fill="none" stroke="#b8f558" stroke-width="2"/>
+ <circle cx="840" cy="185" r="2" fill="#101c2c"/><circle cx="858" cy="185" r="2" fill="#101c2c"/>
+ <path d="M838 199q11 8 22 0" fill="none" stroke="#567681" stroke-width="2"/>
+ <rect x="1015" y="139" width="193" height="155" rx="8" fill="#152333"/>
+ <g font-family="Segoe UI,Arial,sans-serif" font-size="10" fill="#a9bbcf"><text x="1029" y="160" fill="#edf4fc" font-size="12" font-weight="600">4x4Tools</text><text x="1029" y="183">Eye contact</text><text x="1029" y="217">Studio lighting</text><text x="1029" y="251">Voice cleanup</text></g>
+ <g stroke="#3c516a" stroke-width="3"><path d="M1029 194H1191M1029 228H1191M1029 262H1191"/></g>
+ <g stroke="#b8f558" stroke-width="3"><path d="M1029 194H1145M1029 228H1106M1029 262H1171"/></g>
+ <g fill="#d5efb6"><circle cx="1145" cy="194" r="4"/><circle cx="1106" cy="228" r="4"/><circle cx="1171" cy="262" r="4"/></g>
+ <g font-family="Segoe UI,Arial,sans-serif" font-size="9" letter-spacing="1" fill="#92a6bd"><text x="697" y="321">PICTURE</text><text x="697" y="348">MATTE</text><text x="697" y="377">VOICE</text></g>
+ <rect x="756" y="310" width="452" height="16" rx="3" fill="#3d5e8a"/>
+ <path d="M839 310v16m91-16v16m97-16v16m88-16v16" stroke="#0b1624" stroke-width="2"/>
+ <rect x="756" y="337" width="452" height="16" rx="3" fill="#5d7d3f"/>
+ <rect x="756" y="364" width="452" height="23" rx="3" fill="#184b48"/>
+ <path d="M768 376h7l3-4 4 9 4-15 3 20 4-16 3 12 4-9 4 5h16l3-9 3 15 4-11 3 5h9l3-6 4 12 3-17 4 19 4-14 3 8h23l4-3 4 7 3-14 4 16 4-18 3 15 4-6h13l3-9 4 17 3-13 4 9h17l3-4 4 7 4-13 3 17 4-20 3 13 4-4h11l3-7 4 13 4-18 3 23 4-15 3 6h17l3-6 4 10 4-14 3 16 4-12 3 5h23l4-4 3 9 4-17 3 18 4-12 4 6h18" fill="none" stroke="#8ce0ce" stroke-width="1.3"/>
+ <path d="M972 306V398" stroke="#e5effb"/><path d="M967 306h10l-5 6Z" fill="#e5effb"/>
+ <text x="1223" y="435" text-anchor="end" fill="#7890a9" font-family="Segoe UI,Arial,sans-serif" font-size="10">WORKFLOW ILLUSTRATION · NOT AN ADOBE SCREENSHOT</text>
+ <path d="M56 466H1224" stroke="#2a3b50"/>
+ <g font-family="Segoe UI,Arial,sans-serif" letter-spacing="1"><text x="56" y="500" fill="#a0b3c9" font-size="13">PREMIERE PRO + AFTER EFFECTS</text><text x="1224" y="500" text-anchor="end" fill="#b8f558" font-size="12">LOCAL GPU PROCESSING / COMMUNITY PREVIEW</text></g>
+</svg>

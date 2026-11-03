@@ -1,0 +1,36 @@
+4x4Tools Broadcast Suite | 0.2.0 Preview 1
+Copyright (c) 2026 4x4Tools
+
+1. Download the official 4x4Tools-Setup.exe from this project's GitHub release.
+2. Save your projects and close After Effects, Premiere and Media Encoder.
+3. Run Setup, review the terms and choose video effects, audio effects, or both.
+   Setup downloads the runtime and your GPU's encrypted model payloads.
+   For offline setup, put release .4x4data assets in a Data folder beside Setup.
+4. In Adobe video effects, look under 4x4Tools.
+5. In Premiere, open Preferences > Audio > Audio Plug-In Manager and scan
+   VST3 plug-ins. Look for the 4x4 audio effects from vendor 4x4Tools.
+
+VIDEO
+Eye Contact, Background Remove, Background Blur, Studio Light,
+Video Denoise, Auto Frame and Detail Restore.
+Background Remove creates transparency: place your replacement background
+on a layer/track underneath. Highest Quality is the default.
+
+AUDIO
+Noise Clean, Room Echo Clean, Voice Clean, Studio Voice Preview,
+Studio Voice HQ and Voice Restore. All are native AE effects and VST3 effects.
+Use Studio Voice HQ for rendered work; its model analyzes six-second blocks.
+Premiere receives the processing latency for compensation. For live editing,
+start with Voice Clean or Studio Voice Preview.
+
+An existing standalone 4x4 Eye Contact installation is retained. Fresh suite
+installations include Eye Contact. No sign-in or NGC key is required to run.
+
+Requires Windows x64, supported NVIDIA RTX/T4 hardware and a current driver
+with CUDA 12.8 support. Models are included for Turing, Ampere, Ada and
+Blackwell. RTX 5070 is the hardware validation machine.
+
+Read QUALITY-REPORT.md and USER-GUIDE.md for status and current limitations.
+Speaker Focus is excluded because its model requires additional NGC access.
+
+Uninstall from Windows Installed Apps: 4x4Tools Broadcast Suite.

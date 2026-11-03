@@ -1,0 +1,30 @@
+name: Source and core checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Public source audit
+        run: python scripts/audit-public.py
+      - name: Configure without vendor SDKs
+        run: cmake -S . -B build/core-only -A x64 -DFOUR_CORE_ONLY=ON
+      - name: Build and test core
+        run: |
+          cmake --build build/core-only --config Release
+          ctest --test-dir build/core-only -C Release --output-on-failure
+      - name: Installer transactions
+        run: |
+          python tests/installer_fixture.py
+          python tests/download_fixture.py
+      - name: Encryption interoperability and tamper rejection
+        run: |
+          python -m pip install pycryptodome==3.23.0
+          python tests/payload_crypto_fixture.py

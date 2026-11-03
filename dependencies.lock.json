@@ -1,0 +1,19 @@
+{
+  "nvidia": {
+    "ar_sdk_core": "1.2.0.0_windows",
+    "vfx_sdk_core": "1.3.0.0_windows",
+    "audio_sdk_core": "3.0.0 (Windows x64 build 3.0.0.51)",
+    "audio_features": "3.0.0"
+  },
+  "vst3": {
+    "repository": "https://github.com/steinbergmedia/vst3sdk.git",
+    "commit": "3cdf9ca5d1f5b1b21e0a86832aa4abe55607bd96",
+    "version": "3.8.1",
+    "submodules": {
+      "base": "fcf9da0bd27a16f7f03773a3a39822f28f5c8477",
+      "pluginterfaces": "4f547e8e102b47de4a8b8aaf343c73b700786372",
+      "public.sdk": "586dc5e6c8012c3e4b01c79389375cbe96bdb1da",
+      "cmake": "054c9143cbb8d47fc4694e473f2ee3b4d951a8f5"
+    }
+  }
+}

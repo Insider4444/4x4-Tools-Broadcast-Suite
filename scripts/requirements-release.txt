@@ -1,0 +1,2 @@
+pycryptodome==3.23.0
+PyMuPDF==1.26.7
