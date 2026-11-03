@@ -45,10 +45,17 @@ function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes) {
     # after an interrupted connection; the embedded SHA-256 remains authoritative.
     [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
     $partial=$Target+'.download'
+    NoReparse $Target;NoReparse $partial
     for($attempt=1;$attempt -le 3;$attempt++) {
         $response=$null;$input=$null;$output=$null
         try {
             $offset=if(Test-Path -LiteralPath $partial){(Get-Item -LiteralPath $partial).Length}else{0L}
+            if($offset -eq $ExpectedBytes) {
+                if(Test-Path -LiteralPath $Target){Remove-Item -LiteralPath $Target -Force}
+                Move-Item -LiteralPath $partial -Destination $Target
+                return
+            }
+            if($offset -gt $ExpectedBytes) {Remove-Item -LiteralPath $partial -Force;$offset=0L}
             $request=[Net.HttpWebRequest]::Create($Url)
             $request.UserAgent='4x4Tools-Setup/0.2.0';$request.Timeout=30000;$request.ReadWriteTimeout=60000
             if($offset -gt 0) {$request.AddRange([long]$offset)}
@@ -56,6 +63,7 @@ function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes) {
             $append=$offset -gt 0 -and [int]$response.StatusCode -eq 206
             if($append -and $response.Headers['Content-Range'] -notmatch "^bytes $offset-") {throw 'Invalid download resume response.'}
             $mode=if($append){[IO.FileMode]::Append}else{[IO.FileMode]::Create}
+            NoReparse $Target;NoReparse $partial
             $output=[IO.File]::Open($partial,$mode,[IO.FileAccess]::Write,[IO.FileShare]::None)
             $input=$response.GetResponseStream();$input.CopyTo($output)
             $output.Dispose();$output=$null
@@ -155,6 +163,7 @@ Write-Output 'Preparing and verifying the selected payloads...'
 foreach ($payload in $payloads) {
     Write-Output "Checking $($payload.file)..."
     $archive=Child $PackageRoot $payload.file
+    NoReparse $archive
     if($encrypted -and !(Test-Path -LiteralPath $archive)) {
         if(!$PayloadCache) {$PayloadCache=Join-Path $env:ProgramData ("4x4Tools\Downloads\"+$data.version)}
         $PayloadCache=Full $PayloadCache;NoReparse $PayloadCache

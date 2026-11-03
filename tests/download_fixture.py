@@ -36,8 +36,9 @@ def main():
             folder = Path(temp)
             source = (ROOT / 'installer/install-suite.ps1').read_text(encoding='utf-8-sig')
             function = re.search(r'(?ms)^function DownloadPayload\(.*?(?=^function WriteIni)', source).group()
+            guards = re.search(r'(?ms)^function Full\(.*?(?=^function Hash)', source).group()
             script = folder / 'test.ps1'
-            script.write_text("$ErrorActionPreference='Stop'\n" + function +
+            script.write_text("$ErrorActionPreference='Stop'\n" + guards + function +
                               f"\nDownloadPayload 'http://127.0.0.1:{server.server_port}/payload' (Join-Path $PSScriptRoot 'payload.bin') {len(data)}\n", encoding='utf-8-sig')
             result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(script)], cwd=ROOT, capture_output=True, text=True)
             if result.returncode:

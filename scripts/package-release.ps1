@@ -3,6 +3,8 @@ param([Parameter(Mandatory=$true)][string]$NsisCompiler)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 if(!(Test-Path -LiteralPath $NsisCompiler)) {throw 'Pass the official local NSIS 3 compiler.'}
+& python (Join-Path $PSScriptRoot 'make-installer-art.py')
+if($LASTEXITCODE -ne 0) {throw 'Shared 4x4-Tools artwork generation failed.'}
 & python (Join-Path $PSScriptRoot 'package_release.py')
 if($LASTEXITCODE -ne 0) {throw 'Encrypted release packaging failed.'}
 $output=Join-Path $root 'dist\release\4x4Tools-Setup.exe'

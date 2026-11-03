@@ -1,9 +1,10 @@
-<p align="center"><img src="docs/assets/hero.svg" alt="4x4Tools Broadcast Suite — Your edit. Better presence. NVIDIA-accelerated picture and voice for Premiere Pro and After Effects." width="100%"></p>
+<p align="center"><img src="docs/assets/hero.svg?v=2" alt="4x4-Tools Broadcast Suite — Your edit. Better presence. NVIDIA-accelerated picture and voice for Premiere Pro and After Effects." width="100%"></p>
 
 <p align="center">
   <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0-preview.1"><img alt="Download preview" src="https://img.shields.io/badge/Download-0.2.0_Preview_1-b8f558?style=for-the-badge&labelColor=151e29"></a>
   <a href="LICENSE"><img alt="Source license MIT" src="https://img.shields.io/badge/Source-MIT-e5eaf2?style=for-the-badge&labelColor=151e29"></a>
   <img alt="Windows x64 and NVIDIA RTX" src="https://img.shields.io/badge/Windows_x64-NVIDIA_RTX-76b900?style=for-the-badge&labelColor=151e29">
+  <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/actions/workflows/checks.yml"><img alt="Source and core checks" src="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/actions/workflows/checks.yml/badge.svg"></a>
 </p>
 
 <p align="center"><a href="#start-here">Install</a> · <a href="#the-toolkit">Explore the effects</a> · <a href="docs/USER-GUIDE.md">User guide</a> · <a href="SDK-SETUP.md">Build it yourself</a> · <a href="QUALITY-REPORT.md">Preview status</a></p>
@@ -104,5 +105,7 @@ Help with reproducible Adobe timeline/export reports, other GPUs, matte edge cas
 ---
 
 Built by **4x4Tools** · [Other 4x4Tools work](https://github.com/Insider4444/4x4-Tools-DLSS-5) · [MIT source license](LICENSE)
+
+[Shared 4x4-Tools logo and brand assets](docs/BRANDING.md)
 
 Powered by NVIDIA Maxine. NVIDIA, Adobe and Steinberg trademarks belong to their owners. Independent community project; no endorsement is claimed.

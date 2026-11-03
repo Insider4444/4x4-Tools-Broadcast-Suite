@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="120" viewBox="0 0 500 120" role="img" aria-labelledby="title"><title id="title">4x4-Tools</title><defs><linearGradient id="accent" x2="1" y2="1"><stop stop-color="#62edcf"/><stop offset="1" stop-color="#318cae"/></linearGradient></defs><g transform="translate(8 16) scale(.51764706)"><g fill="url(#accent)">
+  <rect width="35" height="35" rx="7"/><rect x="45" width="35" height="35" rx="7"/><rect x="90" width="35" height="35" rx="7"/><rect x="135" width="35" height="35" rx="7" opacity=".42"/>
+  <rect y="45" width="35" height="35" rx="7"/><rect x="45" y="45" width="35" height="35" rx="7"/><rect x="90" y="45" width="35" height="35" rx="7"/><rect x="135" y="45" width="35" height="35" rx="7" opacity=".62"/>
+  <rect y="90" width="35" height="35" rx="7" opacity=".62"/><rect x="45" y="90" width="35" height="35" rx="7"/><rect x="90" y="90" width="35" height="35" rx="7"/><rect x="135" y="90" width="35" height="35" rx="7"/>
+  <rect y="135" width="35" height="35" rx="7" opacity=".42"/><rect x="45" y="135" width="35" height="35" rx="7"/><rect x="90" y="135" width="35" height="35" rx="7"/><rect x="135" y="135" width="35" height="35" rx="7"/>
+ </g></g><text x="120" y="79" fill="#132238" font-family="Segoe UI,Arial,sans-serif" font-size="53" font-weight="700" letter-spacing="-1">4x4-Tools</text></svg>

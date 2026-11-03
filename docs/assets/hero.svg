@@ -4,15 +4,22 @@
  <defs>
   <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#132238"/><stop offset="1" stop-color="#080e17"/></linearGradient>
   <linearGradient id="panel" x2="1" y2="1"><stop stop-color="#36576a"/><stop offset="1" stop-color="#172d42"/></linearGradient>
+  <linearGradient id="brand-accent" x2="1" y2="1"><stop stop-color="#62edcf"/><stop offset="1" stop-color="#318cae"/></linearGradient>
   <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#293c51" stroke-width=".6"/></pattern>
  </defs>
  <rect width="1280" height="530" rx="22" fill="url(#bg)"/>
  <rect width="1280" height="530" rx="22" fill="url(#grid)" opacity=".6"/>
  <path d="M36 32H1244" stroke="#b8f558" stroke-width="2" opacity=".7"/>
- <rect x="55" y="62" width="41" height="41" rx="9" fill="#b8f558"/>
- <path d="M63 71v10h10V71m5 0v10h10V71M63 86v10h10V86m5 0v10h10V86" fill="none" stroke="#101c2c" stroke-width="3"/>
+ <!-- brand-mark:start -->
+ <g transform="translate(55 62) scale(.24117647)"><g fill="url(#brand-accent)">
+  <rect width="35" height="35" rx="7"/><rect x="45" width="35" height="35" rx="7"/><rect x="90" width="35" height="35" rx="7"/><rect x="135" width="35" height="35" rx="7" opacity=".42"/>
+  <rect y="45" width="35" height="35" rx="7"/><rect x="45" y="45" width="35" height="35" rx="7"/><rect x="90" y="45" width="35" height="35" rx="7"/><rect x="135" y="45" width="35" height="35" rx="7" opacity=".62"/>
+  <rect y="90" width="35" height="35" rx="7" opacity=".62"/><rect x="45" y="90" width="35" height="35" rx="7"/><rect x="90" y="90" width="35" height="35" rx="7"/><rect x="135" y="90" width="35" height="35" rx="7"/>
+  <rect y="135" width="35" height="35" rx="7" opacity=".42"/><rect x="45" y="135" width="35" height="35" rx="7"/><rect x="90" y="135" width="35" height="35" rx="7"/><rect x="135" y="135" width="35" height="35" rx="7"/>
+ </g></g>
+ <!-- brand-mark:end -->
  <g font-family="Segoe UI,Arial,sans-serif">
-  <text x="110" y="90" fill="#eff5fc" font-weight="700" font-size="24" letter-spacing="2">4x4Tools</text>
+  <text x="110" y="90" fill="#eff5fc" font-weight="700" font-size="24" letter-spacing="2">4x4-Tools</text>
   <text x="56" y="151" fill="#b8f558" font-size="14" font-weight="600" letter-spacing="4">BROADCAST SUITE</text>
   <g fill="#f4f7fd" font-size="58" font-weight="700" letter-spacing="-2"><text x="52" y="219">Your edit.</text><text x="52" y="284">Better presence.</text></g>
   <g fill="#b3c4d7" font-size="19"><text x="56" y="333">NVIDIA-accelerated picture + voice.</text><text x="56" y="362">Right inside your Adobe timeline.</text></g>

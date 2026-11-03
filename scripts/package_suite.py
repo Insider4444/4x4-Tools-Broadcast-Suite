@@ -99,7 +99,8 @@ def collect(runtime_only=False):
         add(ROOT/'build/bin'/f'4x4{target}.aex',f'plugins/audio/4x4{target}.aex','plugins','audio')
     bundle=ROOT/'build/VST3/Release/4x4Tools Audio.vst3'
     for relative in ('Contents/x86_64-win/4x4Tools Audio.vst3','Contents/Resources/moduleinfo.json','PlugIn.ico','desktop.ini'):
-        add(bundle/relative,f'plugins/vst3/4x4Tools Audio.vst3/{relative}','plugins','audio')
+        source=ROOT/'resources/branding/4x4Tools.ico' if relative=='PlugIn.ico' else bundle/relative
+        add(source,f'plugins/vst3/4x4Tools Audio.vst3/{relative}','plugins','audio')
     for name,component in (('SupportCheck.exe','common'),('EyeContactCli.exe','video'),('VideoEffectsCli.exe','video'),('AudioEffectsCli.exe','audio')):
         add(ROOT/'build/bin'/name,f'Tools/{name}','plugins',component)
     for name in ('README.md','THIRD-PARTY-NOTICES.md','QUALITY-REPORT.md'):

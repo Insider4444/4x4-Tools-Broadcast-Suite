@@ -67,6 +67,22 @@ def main():
     args = parser.parse_args()
     paths()
     suite.collect()
+    # Some dependencies use extensionless LICENSE or COPYING.MPL2 filenames.
+    # Retain those text notices without pulling their header/source directories
+    # into the distribution. Small notice additions belong to plugin payloads,
+    # leaving the multi-gigabyte inference-library payloads unchanged.
+    destinations = {f['path'] for f in suite.FILES}
+    for sdk, name, component in [(suite.AR, 'ARSDK', 'video'), (suite.VFX, 'VideoFX', 'video'), (suite.AFX, 'AudioFX', 'audio')]:
+        for source in (sdk / 'bin').rglob('*'):
+            if not source.is_file() or not any(n in source.name.lower() for n in ('license', 'copying', 'notice')):
+                continue
+            if source.suffix.lower() in ('.dll', '.exe', '.pdb', '.lib') or source.stat().st_size > 2 * 1024 * 1024:
+                continue
+            relative = f'runtime/{name}/bin/{source.relative_to(sdk / "bin").as_posix()}'
+            if source.suffix.lower() not in ('.txt', '.pdf', '.md', '.html'):
+                relative += '.txt'
+            if relative not in destinations:
+                suite.add(source, relative, 'plugins', component); destinations.add(relative)
     # Public source MIT license, NVIDIA model attribution and end-user terms.
     for source, destination in [('LICENSE', 'LICENSE'), ('installer/END-USER-TERMS.txt', 'END-USER-TERMS.txt'),
                                 ('installer/NVIDIA-MODEL-NOTICE.txt', 'Notices/Notice.txt'),
