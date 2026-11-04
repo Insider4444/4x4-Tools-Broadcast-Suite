@@ -32,11 +32,11 @@ BrandingText "© 2026 4x4Tools"
 SetCompressor /SOLID lzma
 ShowInstDetails show
 ShowUninstDetails show
-VIProductVersion "0.2.0.3"
+VIProductVersion "0.2.0.4"
 VIAddVersionKey /LANG=1033 "ProductName" "4x4Tools Broadcast Suite"
 VIAddVersionKey /LANG=1033 "CompanyName" "4x4Tools"
 VIAddVersionKey /LANG=1033 "FileDescription" "4x4Tools Broadcast Suite Setup"
-VIAddVersionKey /LANG=1033 "FileVersion" "0.2.0.3"
+VIAddVersionKey /LANG=1033 "FileVersion" "0.2.0.4"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 !define MUI_ICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"
 !define MUI_UNICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"
@@ -65,6 +65,7 @@ VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 !insertmacro MUI_LANGUAGE "English"
 Var Architecture
 Var Components
+Var SetupLog
 Function .onInit
 !ifdef UI_PREVIEW
  StrCpy $Architecture "120"
@@ -79,6 +80,7 @@ Function .onInit
  SetOutPath "$PLUGINSDIR"
  File /oname=SupportCheck.exe "${PROJECT_ROOT}\build\bin\SupportCheck.exe"
  File /oname=install-suite.ps1 "${PROJECT_ROOT}\installer\install-suite.ps1"
+ File /oname=setup-launcher.ps1 "${PROJECT_ROOT}\installer\setup-launcher.ps1"
 !ifdef WEB_RELEASE
  File /oname=suite-manifest.json "${SUITE_MANIFEST}"
  File /oname=payload-crypto.cs "${PROJECT_ROOT}\installer\payload-crypto.cs"
@@ -121,14 +123,18 @@ Section -Install
   StrCpy $Components "video"
  ${EndIf}
  DetailPrint "Downloading and installing your selected 4x4Tools effects..."
+ GetTempFileName $SetupLog "$TEMP"
+ DetailPrint "Setup log: $SetupLog"
+ ; Keep child processes away from NSIS's native System.dll in $PLUGINSDIR.
+ SetOutPath "$WINDIR"
 !ifdef WEB_RELEASE
- nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\install-suite.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -KeyFile "$PLUGINSDIR\release-key.bin"'
+ nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\setup-launcher.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -KeyFile "$PLUGINSDIR\release-key.bin" -LogFile "$SetupLog"'
 !else
- nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\install-suite.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components"'
+ nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\setup-launcher.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -LogFile "$SetupLog"'
 !endif
  Pop $0
  ${If} $0 != 0
-  MessageBox MB_OK|MB_ICONSTOP "Setup could not finish. Review the details above, check your internet connection and run Setup again. Interrupted downloads resume automatically."
+  MessageBox MB_OK|MB_ICONSTOP "Setup could not finish. The details have been saved to:$\r$\n$\r$\n$SetupLog$\r$\n$\r$\nRun Setup again to retry. Interrupted downloads resume automatically."
   SetErrorLevel 1
   Abort
  ${EndIf}
@@ -160,6 +166,7 @@ Function un.onInit
  ${EndIf}
 FunctionEnd
 Section "Uninstall"
+ SetOutPath "$WINDIR"
  nsExec::ExecToLog '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$INSTDIR\uninstall-suite.ps1" -InstallRoot "$INSTDIR"'
  Pop $0
  ${If} $0 != 0

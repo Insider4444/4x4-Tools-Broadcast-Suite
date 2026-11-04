@@ -12,11 +12,22 @@ param(
     [string]$VfxSdkRoot,
     [string]$AfxSdkRoot,
     [string]$KeyFile,
-    [string]$PayloadCache
+    [string]$PayloadCache,
+    [string]$LogFile
 )
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version 2
-Add-Type -AssemblyName System.IO.Compression.FileSystem
+$script:setupTranscript=$false
+trap {
+    if($script:setupTranscript) {
+        Write-Output ("Setup stopped: "+$_.Exception.Message)
+        Write-Output $_.InvocationInfo.PositionMessage
+        Write-Output $_.ScriptStackTrace
+        try { Stop-Transcript | Out-Null } catch { }
+        $script:setupTranscript=$false
+    }
+    throw
+}
 
 function Full([string]$Path) { [IO.Path]::GetFullPath($Path).TrimEnd('\','/') }
 function Child([string]$Parent,[string]$Relative) {
@@ -113,6 +124,13 @@ function WriteIni([string]$Directory,[string]$Runtime) {
     }
 }
 
+if($LogFile) {
+    $LogFile=Full $LogFile;NoReparse $LogFile
+    Start-Transcript -LiteralPath $LogFile -Append | Out-Null
+    $script:setupTranscript=$true
+}
+Write-Output 'Starting 4x4Tools Setup...'
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 $PackageRoot=Full $PackageRoot
 $data=Get-Content -LiteralPath $Manifest -Raw | ConvertFrom-Json
 if ($data.schema -ne 1 -or $data.product -ne '4x4Tools Broadcast Suite') { throw 'Unrecognized 4x4Tools package manifest.' }
@@ -121,7 +139,10 @@ $encrypted=$null -ne $data.PSObject.Properties['distribution'] -and $data.distri
 if($encrypted) {
     if(!$KeyFile -or !(Test-Path -LiteralPath $KeyFile)) {throw 'The installer release key is missing. Use the official Setup executable.'}
     if($data.releaseBase -notmatch '^https://github\.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v[0-9A-Za-z.\-]+$') {throw 'Unexpected release download location.'}
-    Add-Type -Path (Join-Path $PSScriptRoot 'payload-crypto.cs')
+    # NSIS extracts a native plug-in named System.dll into its working folder.
+    # Windows PowerShell's compiler otherwise resolves that file as a .NET
+    # reference. Use the loaded framework assembly's absolute path instead.
+    Add-Type -Path (Join-Path $PSScriptRoot 'payload-crypto.cs') -ReferencedAssemblies ([Uri].Assembly.Location)
 }
 if($script:community) {
     function RequireFile([string]$Root,[string]$Relative) {
@@ -204,7 +225,11 @@ foreach ($payload in $payloads) {
     }
     $archives[$payload.id]=$archive
 }
-if ($ValidateOnly) { Write-Output "Verified $($selected.Count) files for NVIDIA SM$Architecture."; exit 0 }
+if ($ValidateOnly) {
+    Write-Output "Verified $($selected.Count) files for NVIDIA SM$Architecture."
+    if($script:setupTranscript) { Stop-Transcript | Out-Null }
+    exit 0
+}
 
 $program64=if ($env:ProgramW6432) {$env:ProgramW6432} else {$env:ProgramFiles}
 $common64=if ($env:CommonProgramW6432) {$env:CommonProgramW6432} else {$env:CommonProgramFiles}
@@ -266,7 +291,11 @@ foreach ($directory in @('plugins\video','plugins\audio','plugins\vst3\4x4Tools 
     if (Test-Path -LiteralPath $path) { WriteIni $path $effectiveRoot }
 }
 [IO.File]::WriteAllText((Child $stage 'package-manifest.json'),(Get-Content -LiteralPath $Manifest -Raw),[Text.UTF8Encoding]::new($false))
-if ($StageOnly) { Write-Output "Stage verified and configured: $stage"; exit 0 }
+if ($StageOnly) {
+    Write-Output "Stage verified and configured: $stage"
+    if($script:setupTranscript) { Stop-Transcript | Out-Null }
+    exit 0
+}
 
 # All hashing and extraction precede changes to installed plugin locations.
 $backup=$null; $promoted=$false; $deployed=[Collections.Generic.List[object]]::new()
@@ -388,3 +417,4 @@ if ($backup) {
 }
 } catch { Write-Warning "The suite is installed. Previous files were preserved because cleanup could not finish: $($_.Exception.Message)" }
 Write-Output '4x4Tools Broadcast Suite installed successfully.'
+if($script:setupTranscript) { Stop-Transcript | Out-Null }
