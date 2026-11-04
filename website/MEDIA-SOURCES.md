@@ -1,6 +1,6 @@
 # Website demonstration references
 
-The user requested a presentation inspired by [NVIDIA's Broadcast page](https://www.nvidia.com/en-us/geforce/broadcasting/broadcast-app/), including its demonstrations. The videos are linked from their original NVIDIA hosts. At the user's explicit request, the website's social preview also includes one unchanged 630 × 352 still, at 0.5 seconds, from the Eye Contact video below. The still and preview retain the NVIDIA credit and OFF/ON labels. They are reference footage from NVIDIA Broadcast, not results captured in this plugin. No demo video is bundled in a release or installer.
+The user requested a presentation inspired by [NVIDIA's Broadcast page](https://www.nvidia.com/en-us/geforce/broadcasting/broadcast-app/), including its demonstrations. The videos are linked from their original NVIDIA hosts. At the user's explicit request, the social preview is their exact, unchanged screenshot of the website hero. It includes the Eye Contact comparison, Adobe host labels and NVIDIA attribution. The comparison is reference footage from NVIDIA Broadcast, not a result captured in this plugin. No demo video is bundled in a release or installer.
 
 | Website section | NVIDIA-hosted reference |
 | --- | --- |

@@ -13,7 +13,7 @@ ALLOWED = {'.md', '.txt', '.json', '.yml', '.yaml', '.ps1', '.py', '.cpp', '.h',
            '.r', '.rc', '.ico', '.bmp', '.svg', '.html', '.css', '.js', '.png'}
 SPECIAL = {'LICENSE', '.gitignore', '.gitattributes'}
 WEBSITE = {'website/dist/index.html','website/dist/styles.css','website/dist/app.js','website/dist/assets/mark.svg',
-           'website/dist/assets/social-card.png','website/dist/assets/eye-contact-nvidia.png'}
+           'website/dist/assets/social-card.png'}
 PRIVATE = re.compile(r'(^|/)(build|dist|artifacts|third_party|\.tools|\.ngc|sdks?|dependencies)(/|$)|'
                      r'(^|/)(ARSDK_windows_|VFXSDK_windows_|[^/]*NVIDIA_AFX_SDK)|'
                      r'(^|/)(sdk-paths\.local\.json|release-key\.[^/]+|\.env[^/]*)(/|$)', re.I)
