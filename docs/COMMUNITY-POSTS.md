@@ -35,7 +35,7 @@ Built with NVIDIA Maxine. Original code is MIT; contributors bring their own Ado
 
 ## Optional attachment
 
-Use the original [announcement artwork](../website/dist/assets/social-card.png) when posting. It contains only the publisher mark and project facts; the NVIDIA reference footage stays on NVIDIA's servers. The website includes the same artwork as its large link-preview image.
+Use the [announcement artwork](../website/dist/assets/social-card.png) when posting. It features the NVIDIA Eye Contact OFF/ON comparison, with its source credit, and the After Effects/Premiere Pro badges. The website includes the same artwork as its large link-preview image. The pictured comparison is NVIDIA Broadcast footage, not a capture from this plugin.
 
 ## Audience terms
 

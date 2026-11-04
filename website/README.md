@@ -2,7 +2,7 @@
 
 Buildless public landing page for 4x4Tools Broadcast Suite. Static HTML, CSS and JavaScript live in `dist`. The dark presentation uses the standard 4x4-Tools mark, large feature demonstrations and a single installer download.
 
-Four reference videos are linked directly from NVIDIA's public Broadcast page, with attribution and a visible explanation that they are NVIDIA Broadcast footage rather than results captured from this plugin. No NVIDIA media is copied into the repository or installer. The voice-control illustration is labeled and contains no fabricated audio comparison. See [media sources](MEDIA-SOURCES.md).
+Four reference videos are linked directly from NVIDIA's public Broadcast page, with attribution and a visible explanation that they are NVIDIA Broadcast footage rather than results captured from this plugin. The social preview uses one credited still from the Eye Contact demo, with After Effects and Premiere Pro badges. The voice-control illustration is labeled and contains no fabricated audio comparison. See [media sources](MEDIA-SOURCES.md).
 
 Videos load when visible, pause off screen and offer explicit playback controls. Reduced-motion visitors initiate playback themselves. The page uses no third-party scripts, analytics or login forms.
 
