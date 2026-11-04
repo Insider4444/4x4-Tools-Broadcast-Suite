@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)][string]$PackageRoot,
     [Parameter(Mandatory=$true)][string]$Manifest,
@@ -13,12 +13,14 @@ param(
     [string]$AfxSdkRoot,
     [string]$KeyFile,
     [string]$PayloadCache,
-    [string]$LogFile
+    [string]$LogFile,
+    [long]$ProgressWindow=0
 )
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version 2
 $script:setupTranscript=$false
 trap {
+    $setupFailure=$_
     if($script:setupTranscript) {
         Write-Output ("Setup stopped: "+$_.Exception.Message)
         Write-Output $_.InvocationInfo.PositionMessage
@@ -26,7 +28,7 @@ trap {
         try { Stop-Transcript | Out-Null } catch { }
         $script:setupTranscript=$false
     }
-    throw
+    throw $setupFailure
 }
 
 function Full([string]$Path) { [IO.Path]::GetFullPath($Path).TrimEnd('\','/') }
@@ -51,57 +53,97 @@ function Hash([string]$Path) {
     try { return ([BitConverter]::ToString($algorithm.ComputeHash($stream))).Replace('-','').ToLowerInvariant() }
     finally { $stream.Dispose();$algorithm.Dispose() }
 }
-function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes,[string]$Label='Required files') {
-    # GitHub/CDN requests carry no credentials. A partial download can resume
-    # after an interrupted connection; the embedded SHA-256 remains authoritative.
+function DownloadPayload([string]$Url,[string]$Target,[long]$ExpectedBytes,[string]$Label='Required files',[string]$ExpectedSha) {
     [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+    [Net.ServicePointManager]::DefaultConnectionLimit=12
     $partial=$Target+'.download'
+    $progress=$null -ne ('FourByFour.SetupProgress' -as [type])
     NoReparse $Target;NoReparse $partial
     for($attempt=1;$attempt -le 3;$attempt++) {
-        $response=$null;$input=$null;$output=$null
+        $response=$null;$input=$null;$output=$null;$hasher=$null;$prefixStream=$null
         try {
             $offset=if(Test-Path -LiteralPath $partial){(Get-Item -LiteralPath $partial).Length}else{0L}
+            if($offset -gt $ExpectedBytes) {Remove-Item -LiteralPath $partial -Force;$offset=0L}
+            if($progress){[FourByFour.SetupProgress]::DownloadStart($Target,$Label,$ExpectedBytes,$offset)}
             if($offset -eq $ExpectedBytes) {
+                if($ExpectedSha -and (Hash $partial) -ne $ExpectedSha){Remove-Item -LiteralPath $partial -Force;throw 'Downloaded files failed verification; retrying.'}
                 if(Test-Path -LiteralPath $Target){Remove-Item -LiteralPath $Target -Force}
                 Move-Item -LiteralPath $partial -Destination $Target
+                if($progress){[FourByFour.SetupProgress]::DownloadComplete($Target)}
                 return
             }
-            if($offset -gt $ExpectedBytes) {Remove-Item -LiteralPath $partial -Force;$offset=0L}
             $request=[Net.HttpWebRequest]::Create($Url)
-            $request.UserAgent='4x4Tools-Setup/0.2.0';$request.Timeout=30000;$request.ReadWriteTimeout=60000
+            $request.UserAgent='4x4Tools-Setup/0.2.0.5';$request.Timeout=30000;$request.ReadWriteTimeout=60000
             if($offset -gt 0) {$request.AddRange([long]$offset)}
             $response=$request.GetResponse()
             $append=$offset -gt 0 -and [int]$response.StatusCode -eq 206
-            if($append -and $response.Headers['Content-Range'] -notmatch "^bytes $offset-") {throw 'Invalid download resume response.'}
+            if($append -and $response.Headers['Content-Range'] -notmatch "^bytes $offset-[0-9]+/$ExpectedBytes`$") {throw 'Invalid download resume response.'}
+            $hasher=[Security.Cryptography.SHA256]::Create()
+            $buffer=[Array]::CreateInstance([byte],1048576)
+            if($append) {
+                $prefixStream=[IO.File]::OpenRead($partial)
+                while(($read=$prefixStream.Read($buffer,0,$buffer.Length)) -gt 0){$null=$hasher.TransformBlock($buffer,0,$read,$buffer,0)}
+                $prefixStream.Dispose();$prefixStream=$null
+            }
             $mode=if($append){[IO.FileMode]::Append}else{[IO.FileMode]::Create}
             NoReparse $Target;NoReparse $partial
-            $output=[IO.File]::Open($partial,$mode,[IO.FileAccess]::Write,[IO.FileShare]::None)
+            $output=[IO.FileStream]::new($partial,$mode,[IO.FileAccess]::Write,[IO.FileShare]::None,1048576,[IO.FileOptions]::SequentialScan)
             $input=$response.GetResponseStream()
-            $buffer=[Array]::CreateInstance([byte],1048576)
             $done=if($append){$offset}else{0L};$lastReport=[DateTime]::UtcNow
             while(($read=$input.Read($buffer,0,$buffer.Length)) -gt 0) {
-                $output.Write($buffer,0,$read);$done+=$read
-                if(([DateTime]::UtcNow-$lastReport).TotalSeconds -ge 5) {
-                    Write-Output ("{0}: {1:N0} of {2:N0} MB ({3:N0}%)" -f $Label,($done/1MB),($ExpectedBytes/1MB),(100*$done/$ExpectedBytes))
+                $done+=$read
+                if($done -gt $ExpectedBytes){throw 'Download exceeds the embedded manifest size.'}
+                $output.Write($buffer,0,$read);$null=$hasher.TransformBlock($buffer,0,$read,$buffer,0)
+                if($progress){[FourByFour.SetupProgress]::DownloadUpdate($Target,$done,$read)}
+                if(!$progress -and ([DateTime]::UtcNow-$lastReport).TotalSeconds -ge 4) {
+                    Write-Output ("{0}: {1:N0} / {2:N0} MB ({3:N0}%)" -f $Label,($done/1MB),($ExpectedBytes/1MB),(100*$done/$ExpectedBytes))
                     $lastReport=[DateTime]::UtcNow
                 }
             }
             $output.Dispose();$output=$null
-            $received=(Get-Item -LiteralPath $partial).Length
-            if($received -ne $ExpectedBytes) {
-                if($received -gt $ExpectedBytes) {Remove-Item -LiteralPath $partial -Force}
-                throw 'Download length differs from the embedded manifest.'
-            }
-            if(Test-Path -LiteralPath $Target) {Remove-Item -LiteralPath $Target -Force}
+            if($done -ne $ExpectedBytes){throw 'Download length differs from the embedded manifest.'}
+            $null=$hasher.TransformFinalBlock([byte[]]@(),0,0)
+            $actual=([BitConverter]::ToString($hasher.Hash)).Replace('-','').ToLowerInvariant()
+            if($ExpectedSha -and $actual -ne $ExpectedSha){Remove-Item -LiteralPath $partial -Force;throw 'Downloaded files failed verification; retrying.'}
+            if(Test-Path -LiteralPath $Target){Remove-Item -LiteralPath $Target -Force}
             Move-Item -LiteralPath $partial -Destination $Target
+            if($progress){[FourByFour.SetupProgress]::DownloadComplete($Target)}
             return
         } catch {
-            if($attempt -eq 3) {throw "The download could not finish. Check your connection and run Setup again to resume automatically. $($_.Exception.Message)"}
-            Write-Output "Connection interrupted; resuming download (attempt $($attempt+1)/3)..."
+            if($attempt -eq 3){throw "The download could not finish. Run Setup again to resume automatically. $($_.Exception.Message)"}
+            Write-Output "Connection interrupted; resuming $Label (attempt $($attempt+1)/3)..."
         } finally {
+            if($prefixStream){$prefixStream.Dispose()};if($hasher){$hasher.Dispose()}
             if($input){$input.Dispose()};if($output){$output.Dispose()};if($response){$response.Dispose()}
         }
     }
+}
+function DownloadBatch([object[]]$Items) {
+    if(!$Items.Count){return}
+    $total=[long]0;foreach($item in $Items){$total+=[long]$item.bytes}
+    Write-Output ("Downloading {0} packages with up to 3 simultaneous connections ({1:N0} MB)." -f $Items.Count,($total/1MB))
+    $pool=[RunspaceFactory]::CreateRunspacePool(1,3);$pool.Open()
+    $jobs=[Collections.Generic.List[object]]::new()
+    $functions='';foreach($name in @('Full','NoReparse','Hash','DownloadPayload')){$functions+='function '+$name+' {'+(Get-Item "Function:$name").Definition+"}`n"}
+    $worker='param($url,$target,$bytes,$label,$sha) $ErrorActionPreference="Stop";'+$functions+' DownloadPayload $url $target $bytes $label $sha'
+    $timer=[Diagnostics.Stopwatch]::StartNew()
+    try {
+        foreach($item in $Items) {
+            Write-Output ("Queued: {0} ({1:N0} MB)" -f $item.label,($item.bytes/1MB))
+            $powershell=[PowerShell]::Create();$powershell.RunspacePool=$pool
+            $null=$powershell.AddScript($worker).AddArgument($item.url).AddArgument($item.target).AddArgument([long]$item.bytes).AddArgument($item.label).AddArgument($item.sha256)
+            $jobs.Add(@{shell=$powershell;handle=$powershell.BeginInvoke();finished=$false})
+        }
+        do {
+            foreach($job in $jobs){if(!$job.finished -and $job.handle.IsCompleted){$result=$job.shell.EndInvoke($job.handle);$result | Write-Output;if($job.shell.HadErrors){throw $job.shell.Streams.Error[0]};$job.finished=$true}}
+            [FourByFour.SetupProgress]::RefreshDownloads($total,$timer.Elapsed.TotalSeconds)
+            if(@($jobs | Where-Object {!$_.finished}).Count){Start-Sleep -Milliseconds 250}
+        } while(@($jobs | Where-Object {!$_.finished}).Count)
+    } finally {
+        foreach($job in $jobs){if(!$job.finished){$job.shell.Stop()};$job.shell.Dispose()}
+        $pool.Close();$pool.Dispose()
+    }
+    [FourByFour.SetupProgress]::Message('Downloads complete','All downloaded packages passed SHA-256 verification.',45)
 }
 function PayloadLabel([string]$Id) {
     switch -Regex ($Id) {
@@ -130,6 +172,9 @@ if($LogFile) {
     $script:setupTranscript=$true
 }
 Write-Output 'Starting 4x4Tools Setup...'
+if(!('FourByFour.SetupProgress' -as [type])){Add-Type -Path (Join-Path $PSScriptRoot 'setup-progress.cs') -ReferencedAssemblies ([Uri].Assembly.Location)}
+[FourByFour.SetupProgress]::Reset();[FourByFour.SetupProgress]::Attach($ProgressWindow)
+[FourByFour.SetupProgress]::Message('Preparing your selected effects','Checking the package and reusable downloads...',0)
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $PackageRoot=Full $PackageRoot
 $data=Get-Content -LiteralPath $Manifest -Raw | ConvertFrom-Json
@@ -199,33 +244,41 @@ foreach ($file in $selected) {
     if ($seen.ContainsKey($file.path)) { throw 'Duplicate package destination.' }; $seen[$file.path]=$true
 }
 $payloads=@($data.payloads | Where-Object { @($selected.payload) -contains $_.id })
-$archives=@{}
-Write-Output 'Preparing and verifying the selected payloads...'
+$archives=@{};$pending=[Collections.Generic.List[object]]::new();$cacheTargets=@{}
+$archiveTotal=[long]0;foreach($payload in $payloads){$archiveTotal+=[long]$payload.bytes}
+$cacheDone=[long]0
+Write-Output 'Checking reusable downloads...'
 foreach ($payload in $payloads) {
     $label=PayloadLabel $payload.id
-    Write-Output "Preparing $label..."
-    $archive=Child $PackageRoot $payload.file
+    if($payload.sha256 -notmatch '^[a-f0-9]{64}$' -or [long]$payload.bytes -le 0){throw 'Invalid package digest or size.'}
+    $archive=Child $PackageRoot $payload.file;$remote=$false
     NoReparse $archive
     if($encrypted -and !(Test-Path -LiteralPath $archive)) {
-        if(!$PayloadCache) {$PayloadCache=Join-Path $env:ProgramData ("4x4Tools\Downloads\"+$data.version)}
+        if(!$PayloadCache){$PayloadCache=Join-Path $env:ProgramData ("4x4Tools\Downloads\"+$data.version)}
         $PayloadCache=Full $PayloadCache;NoReparse $PayloadCache
         $null=New-Item -ItemType Directory -Path $PayloadCache -Force
-        if($payload.asset -notmatch '^[a-zA-Z0-9.\-]+\.4x4data$') {throw 'Invalid release asset name.'}
-        $archive=Child $PayloadCache $payload.asset
-        if((Test-Path -LiteralPath $archive) -and ((Get-Item -LiteralPath $archive).Length -ne [long]$payload.bytes -or (Hash $archive) -ne $payload.sha256)) {
-            Remove-Item -LiteralPath $archive -Force
-        }
-        if(!(Test-Path -LiteralPath $archive)) {
-            Write-Output "Downloading $label ($([Math]::Round($payload.bytes/1MB)) MB)..."
-            DownloadPayload ($data.releaseBase+'/'+$payload.asset) $archive ([long]$payload.bytes) $label
-        }
+        if($payload.asset -notmatch '^[a-zA-Z0-9.\-]+\.4x4data$'){throw 'Invalid release asset name.'}
+        $archive=Child $PayloadCache $payload.asset;$remote=$true
+        NoReparse $archive;NoReparse ($archive+'.download')
     }
-    if (!(Test-Path -LiteralPath $archive) -or (Get-Item -LiteralPath $archive).Length -ne [long]$payload.bytes -or (Hash $archive) -ne $payload.sha256) {
-        throw "Required files could not be verified ($label). Run Setup again to retry the download automatically."
+    if($cacheTargets.ContainsKey($archive)){throw 'Duplicate package archive path.'};$cacheTargets[$archive]=$true
+    if(Test-Path -LiteralPath $archive) {
+        [FourByFour.SetupProgress]::Begin(('Checking cached '+$label),5*$cacheDone/[Math]::Max([long]1,[long]$archiveTotal),5*[long]$payload.bytes/[Math]::Max([long]1,[long]$archiveTotal),[long]$payload.bytes)
+        $valid=(Get-Item -LiteralPath $archive).Length -eq [long]$payload.bytes
+        if($valid){$valid=[FourByFour.SetupFiles]::Hash($archive,$true) -eq $payload.sha256}
+        if(!$valid){if($remote){Remove-Item -LiteralPath $archive -Force}else{throw "Required files could not be verified ($label)."}}
+        else{Write-Output "Reusing verified $label."}
     }
-    $archives[$payload.id]=$archive
+    if(!(Test-Path -LiteralPath $archive)) {
+        if(!$remote){throw "Required files could not be verified ($label)."}
+        $pending.Add(@{url=($data.releaseBase+'/'+$payload.asset);target=$archive;bytes=[long]$payload.bytes;sha256=$payload.sha256;label=$label})
+    }
+    $cacheDone+=[long]$payload.bytes;$archives[$payload.id]=$archive
 }
+DownloadBatch -Items ($pending.ToArray())
+[FourByFour.SetupProgress]::Message('Downloads ready','Required packages are verified. Preparing to unpack...',45)
 if ($ValidateOnly) {
+    [FourByFour.SetupProgress]::Message('Verification complete','All selected packages passed integrity checks.',100)
     Write-Output "Verified $($selected.Count) files for NVIDIA SM$Architecture."
     if($script:setupTranscript) { Stop-Transcript | Out-Null }
     exit 0
@@ -250,7 +303,11 @@ if ($StageOnly) {
 $null=New-Item -ItemType Directory -Path $stage -ErrorAction Stop
 $blobs=Child $stage '.payload-blobs'; $null=New-Item -ItemType Directory -Path $blobs
 Write-Output 'Unpacking verified NVIDIA runtimes and models...'
-$blobFiles=@{}
+$blobFiles=@{};$uniqueSizes=@{};$workDone=[long]0;$workTotal=[long]0
+foreach($file in $selected){$uniqueSizes[$file.sha256]=[long]$file.bytes}
+foreach($size in $uniqueSizes.Values){$workTotal+=$size}
+if($encrypted){foreach($payload in $payloads){$workTotal+=2*[long]$payload.bytes};[FourByFour.PayloadCrypto]::Progress=[FourByFour.SetupProgress]::CryptoReporter()}
+$workTotal=[Math]::Max([long]1,[long]$workTotal)
 foreach ($payload in $payloads) {
     Write-Output "Installing $(PayloadLabel $payload.id)..."
     $needed=@{}
@@ -258,7 +315,10 @@ foreach ($payload in $payloads) {
     $archive=$archives[$payload.id];$plain=$null
     if($encrypted) {
         $plain=Child $blobs ($payload.id+'.zip')
+        $units=2*[long]$payload.bytes
+        [FourByFour.SetupProgress]::Begin(('Verifying and unpacking '+(PayloadLabel $payload.id)),45+50*$workDone/$workTotal,50*$units/$workTotal,$units)
         [FourByFour.PayloadCrypto]::Decrypt($archive,$plain,[IO.File]::ReadAllBytes($KeyFile))
+        [FourByFour.SetupProgress]::FinishPhase();$workDone+=$units
         $archive=$plain
     }
     $zip=[IO.Compression.ZipFile]::OpenRead($archive)
@@ -270,14 +330,18 @@ foreach ($payload in $payloads) {
             if (!$needed.ContainsKey($entry.FullName) -or $blobFiles.ContainsKey($entry.FullName)) { continue }
             if ($entry.Length -ne $needed[$entry.FullName]) { throw 'Archive entry size differs from the embedded manifest.' }
             $target=Child $blobs $entry.FullName
-            $input=$entry.Open();$output=[IO.File]::Create($target)
-            try { $input.CopyTo($output) } finally { $output.Dispose();$input.Dispose() }
-            if ((Hash $target) -ne $entry.FullName) { throw 'Extracted file failed its SHA-256 check.' }
+            $display=($selected | Where-Object {$_.sha256 -eq $entry.FullName} | Select-Object -First 1).path
+            [FourByFour.SetupProgress]::Begin(('Unpacking: '+[IO.Path]::GetFileName($display)),45+50*$workDone/$workTotal,50*$entry.Length/$workTotal,$entry.Length)
+            $input=$entry.Open()
+            try {[FourByFour.SetupFiles]::Extract($input,$target,$entry.Length,$entry.FullName)}finally{$input.Dispose()}
+            $workDone+=$entry.Length
             $blobFiles[$entry.FullName]=$target
         }
     } finally { $zip.Dispose();if($plain -and (Test-Path -LiteralPath $plain)){Remove-Item -LiteralPath $plain -Force} }
 }
+$placed=0
 foreach ($file in $selected) {
+    [FourByFour.SetupProgress]::Message('Organizing installed files',("{0} of {1} files" -f (++$placed),$selected.Count),95+3*$placed/$selected.Count)
     if (!$blobFiles.ContainsKey($file.sha256)) { throw "Missing archive entry for $($file.path)." }
     $target=Child $stage $file.path
     $null=New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force
@@ -292,11 +356,13 @@ foreach ($directory in @('plugins\video','plugins\audio','plugins\vst3\4x4Tools 
 }
 [IO.File]::WriteAllText((Child $stage 'package-manifest.json'),(Get-Content -LiteralPath $Manifest -Raw),[Text.UTF8Encoding]::new($false))
 if ($StageOnly) {
+    [FourByFour.SetupProgress]::Message('Staging complete','Selected files are verified and configured.',100)
     Write-Output "Stage verified and configured: $stage"
     if($script:setupTranscript) { Stop-Transcript | Out-Null }
     exit 0
 }
 
+[FourByFour.SetupProgress]::Message('Installing into Adobe','Downloads and unpacking are complete. Registering your effects...',98)
 # All hashing and extraction precede changes to installed plugin locations.
 $backup=$null; $promoted=$false; $deployed=[Collections.Generic.List[object]]::new()
 try {
@@ -416,5 +482,6 @@ if ($backup) {
     }
 }
 } catch { Write-Warning "The suite is installed. Previous files were preserved because cleanup could not finish: $($_.Exception.Message)" }
+[FourByFour.SetupProgress]::Message('Installation complete','Your selected 4x4Tools effects are installed.',100)
 Write-Output '4x4Tools Broadcast Suite installed successfully.'
 if($script:setupTranscript) { Stop-Transcript | Out-Null }

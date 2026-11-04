@@ -3,6 +3,7 @@ Unicode true
 !include "LogicLib.nsh"
 !include "x64.nsh"
 !include "Sections.nsh"
+!include "WinMessages.nsh"
 !ifndef PROJECT_ROOT
  !error "Run scripts/package-suite.ps1"
 !endif
@@ -32,11 +33,11 @@ BrandingText "© 2026 4x4Tools"
 SetCompressor /SOLID lzma
 ShowInstDetails show
 ShowUninstDetails show
-VIProductVersion "0.2.0.4"
+VIProductVersion "0.2.0.5"
 VIAddVersionKey /LANG=1033 "ProductName" "4x4Tools Broadcast Suite"
 VIAddVersionKey /LANG=1033 "CompanyName" "4x4Tools"
 VIAddVersionKey /LANG=1033 "FileDescription" "4x4Tools Broadcast Suite Setup"
-VIAddVersionKey /LANG=1033 "FileVersion" "0.2.0.4"
+VIAddVersionKey /LANG=1033 "FileVersion" "0.2.0.5"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 !define MUI_ICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"
 !define MUI_UNICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"
@@ -58,6 +59,7 @@ VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
  !insertmacro MUI_PAGE_LICENSE "${SUITE_LICENSE}"
 !endif
 !insertmacro MUI_PAGE_COMPONENTS
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW InitInstallProgress
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -66,6 +68,30 @@ VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 Var Architecture
 Var Components
 Var SetupLog
+Function InitInstallProgress
+ ; Add one live metrics line above the details log, using the page's own font.
+ FindWindow $0 "#32770" "" $HWNDPARENT
+ GetDlgItem $1 $0 1016
+ ${If} $1 != 0
+  System::Alloc 16
+  Pop $2
+  System::Call 'user32::GetWindowRect(p r1, p r2)'
+  System::Call 'user32::MapWindowPoints(p 0, p r0, p r2, i 2)'
+  System::Call '*$2(i .r3, i .r4, i .r5, i .r6)'
+  System::Free $2
+  IntOp $5 $5 - $3
+  IntOp $6 $6 - $4
+  System::Call 'user32::GetDpiForWindow(p r0) i .r7'
+  IntOp $7 $7 * 26
+  IntOp $7 $7 / 96
+  IntOp $8 $4 + $7
+  IntOp $6 $6 - $7
+  System::Call 'user32::MoveWindow(p r1, i r3, i r8, i r5, i r6, i 1)'
+  System::Call 'user32::CreateWindowExW(i 0, w "STATIC", w "Preparing your selected effects...", i 0x50000080, i r3, i r4, i r5, i r7, p r0, p 17476, p 0, p 0) p .r8'
+  SendMessage $1 ${WM_GETFONT} 0 0 $9
+  SendMessage $8 ${WM_SETFONT} $9 1
+ ${EndIf}
+FunctionEnd
 Function .onInit
 !ifdef UI_PREVIEW
  StrCpy $Architecture "120"
@@ -81,6 +107,7 @@ Function .onInit
  File /oname=SupportCheck.exe "${PROJECT_ROOT}\build\bin\SupportCheck.exe"
  File /oname=install-suite.ps1 "${PROJECT_ROOT}\installer\install-suite.ps1"
  File /oname=setup-launcher.ps1 "${PROJECT_ROOT}\installer\setup-launcher.ps1"
+ File /oname=setup-progress.cs "${PROJECT_ROOT}\installer\setup-progress.cs"
 !ifdef WEB_RELEASE
  File /oname=suite-manifest.json "${SUITE_MANIFEST}"
  File /oname=payload-crypto.cs "${PROJECT_ROOT}\installer\payload-crypto.cs"
@@ -126,11 +153,13 @@ Section -Install
  GetTempFileName $SetupLog "$TEMP"
  DetailPrint "Setup log: $SetupLog"
  ; Keep child processes away from NSIS's native System.dll in $PLUGINSDIR.
+ SetDetailsPrint none
  SetOutPath "$WINDIR"
+ SetDetailsPrint both
 !ifdef WEB_RELEASE
- nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\setup-launcher.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -KeyFile "$PLUGINSDIR\release-key.bin" -LogFile "$SetupLog"'
+ nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\setup-launcher.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -KeyFile "$PLUGINSDIR\release-key.bin" -LogFile "$SetupLog" -ProgressWindow "$HWNDPARENT"'
 !else
- nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\setup-launcher.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -LogFile "$SetupLog"'
+ nsExec::ExecToLog /TIMEOUT=3600000 '"$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\setup-launcher.ps1" -PackageRoot "$EXEDIR" -Manifest "$PLUGINSDIR\suite-manifest.json" -Architecture "$Architecture" -InstallRoot "$INSTDIR" -Components "$Components" -LogFile "$SetupLog" -ProgressWindow "$HWNDPARENT"'
 !endif
  Pop $0
  ${If} $0 != 0

@@ -9,6 +9,7 @@ using System.Text;
 namespace FourByFour {
     public static class PayloadCrypto {
         static readonly byte[] Magic = Encoding.ASCII.GetBytes("4X4ENC01");
+        public static Action<string, long, long> Progress;
         public static void Decrypt(string source, string destination, byte[] keys) {
             if (keys.Length != 64) throw new InvalidDataException("Invalid release key.");
             byte[] aesKey = new byte[32], macKey = new byte[32];
@@ -27,6 +28,7 @@ namespace FourByFour {
                             if (read == 0) throw new EndOfStreamException();
                             mac.TransformBlock(buffer, 0, read, buffer, 0);
                             remaining -= read;
+                            if (Progress != null) Progress("Authenticate", authenticatedLength - remaining, authenticatedLength);
                         }
                         mac.TransformFinalBlock(new byte[0], 0, 0);
                         byte[] tag = new byte[32];
@@ -50,6 +52,7 @@ namespace FourByFour {
                                 int read = input.Read(buffer, 0, (int)Math.Min(buffer.Length, remaining));
                                 if (read == 0) throw new EndOfStreamException();
                                 decrypted.Write(buffer, 0, read); remaining -= read;
+                                if (Progress != null) Progress("Decrypt", authenticatedLength - 24 - remaining, authenticatedLength - 24);
                             }
                             decrypted.FlushFinalBlock();
                         }

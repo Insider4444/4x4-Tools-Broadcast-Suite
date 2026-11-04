@@ -1,4 +1,4 @@
-# Keep native process startup separate from the full installer script. NSIS
+﻿# Keep native process startup separate from the full installer script. NSIS
 # extracts native DLLs into its helper directory; they are not .NET assemblies.
 [CmdletBinding()]
 param(
@@ -15,7 +15,8 @@ param(
     [string]$AfxSdkRoot,
     [string]$KeyFile,
     [string]$PayloadCache,
-    [string]$LogFile
+    [string]$LogFile,
+    [long]$ProgressWindow=0
 )
 $ErrorActionPreference='Stop'
 try {

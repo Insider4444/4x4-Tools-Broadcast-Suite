@@ -4,25 +4,37 @@ Prepared for the owner to post. These messages have not been sent or published t
 
 ## Telegram
 
-**4x4-Tools Broadcast Suite is here!**
+NVIDIA Eye Contact inside Premiere Pro & After Effects? 🤯
 
-Bring NVIDIA-accelerated effects into **Premiere Pro + After Effects**: Eye Contact, background removal/blur, studio lighting, voice cleanup and more — **13 effects** in total.
+Meet **4x4-Tools Broadcast Suite**:
+• Look toward the camera with Eye Contact
+• Clean background noise & room echo
+• Remove or blur your background
+• Relight your subject with Studio Light
+• Reframe, denoise & restore picture detail
+• Enhance your voice with Studio Voice
 
-Windows x64 + supported NVIDIA RTX. One installer handles the matching models; no SDKs or API keys needed. Processing stays local.
+**13 effects. One installer. Local processing.**
+Free community release for Windows x64 + supported NVIDIA RTX. No SDKs or API keys needed.
 
-Free community release. Try it on a sample clip and share your feedback!
-
-Download: https://insider4444.github.io/4x4-Tools-Broadcast-Suite/
-Source + support: https://github.com/Insider4444/4x4-Tools-Broadcast-Suite
+Link 👇
+https://insider4444.github.io/4x4-Tools-Broadcast-Suite/
 
 #PremierePro #AfterEffects #NVIDIARTX #VideoEditing #4x4Tools
 
 ## X / Twitter
 
-4x4-Tools Broadcast Suite: 13 NVIDIA-accelerated effects for Premiere Pro + After Effects. Eye Contact, voice cleanup, backgrounds & studio light.
+NVIDIA Eye Contact inside Premiere Pro & After Effects? 🤯
 
-RTX + Windows. One installer. Local processing. Free community release.
+Meet 4x4-Tools Broadcast Suite:
+• Eye Contact
+• Voice cleanup
+• Background removal
+• Studio lighting
 
+13 effects. One installer. RTX + Windows.
+
+Link 👇
 https://insider4444.github.io/4x4-Tools-Broadcast-Suite/
 
 #PremierePro #AfterEffects

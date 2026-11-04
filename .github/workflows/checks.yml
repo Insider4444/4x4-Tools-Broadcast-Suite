@@ -26,6 +26,8 @@ jobs:
         run: |
           python tests/installer_fixture.py
           python tests/download_fixture.py
+          python tests/parallel_download_fixture.py
+          python tests/installer_progress_fixture.py
       - name: Encryption interoperability and tamper rejection
         run: |
           python -m pip install pycryptodome==3.23.0

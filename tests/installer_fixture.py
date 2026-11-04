@@ -7,6 +7,7 @@ directory, process, environment setting or registry key is modified.
 from pathlib import Path
 import hashlib
 import json
+import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -24,6 +25,7 @@ def main():
         raise RuntimeError('Fixture escaped the build tree')
     program=fixture/'ProgramFiles';common=fixture/'CommonFiles';package=fixture/'Package'
     for p in (program,common,package/'Data'):p.mkdir(parents=True,exist_ok=True)
+    shutil.copyfile(ROOT/'installer/setup-progress.cs',fixture/'setup-progress.cs')
     scripts={}
     for name in ('install','uninstall'):
         source=(ROOT/f'installer/{name}-suite.ps1').read_text(encoding='utf-8-sig')

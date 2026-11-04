@@ -6,9 +6,20 @@ Save/close Adobe apps, run Setup, review the terms and choose video tools, voice
 
 [Download website](https://insider4444.github.io/4x4-Tools-Broadcast-Suite/) · [User guide](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/blob/main/docs/USER-GUIDE.md) · [Get help](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/issues/new/choose)
 
+## Faster downloads and live progress — 4 November 2026
+
+The current installer has Windows file version **0.2.0.5**; the effect suite remains 0.2.0. Redownload Setup to receive the updated installer.
+
+- Up to three packages download simultaneously, with resumable transfers and automatic retries.
+- A live progress bar reflects bytes processed. The status area shows the current download or unpacked file, transferred data, MB/s and estimated time for the current step.
+- Progress continues during cache verification, authentication, decryption and unpacking, including large NVIDIA libraries.
+- Verified cached packages are reused. Downloads and extracted files are hashed while streaming, avoiding redundant disk reads; archive authentication remains required.
+
+Validation covers real NSIS controls and layout, parallel transfers, interrupted and ignored-Range responses, corrupt-download retries, encrypted staging of all 184 selected RTX 5070 files, and upgrade/uninstall/rollback fixtures. Download speed remains limited by the user's connection and GitHub's CDN; unpacking time depends on CPU and storage.
+
 ## Setup startup fix — 4 November 2026
 
-**Redownload Setup if an earlier build stopped with “Access to the path is denied.”** The corrected installer has Windows file version **0.2.0.4**. The suite remains version 0.2.0.
+**Redownload Setup if an earlier build stopped with “Access to the path is denied.”** The startup fix introduced in installer 0.2.0.4 is retained in the current 0.2.0.5 installer. The suite remains version 0.2.0.
 
 Setup now starts its PowerShell helper through an isolated launcher, resolves the .NET compiler reference explicitly instead of using NSIS's native `System.dll`, and saves a diagnostic log. A full NSIS validation run verified all 184 files selected for the RTX 5070, and an encrypted staging regression test covers the DLL conflict. Upgrade, rollback and interrupted-download checks also pass. These checks do not replace Adobe timeline/export acceptance testing.
 
