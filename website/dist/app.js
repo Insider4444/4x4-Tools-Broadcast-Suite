@@ -20,3 +20,13 @@ tabs.forEach((tab,index)=>{
 const status=document.getElementById('download-status');
 document.querySelectorAll('a.download').forEach(a=>a.addEventListener('click',()=>{status.hidden=false}));
 status.querySelector('button').addEventListener('click',()=>{status.hidden=true});
+
+// NVIDIA-hosted reference videos: lazy playback, explicit controls and reduced motion.
+const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+const demos=[...document.querySelectorAll('[data-demo]')];
+function demoState(figure,playing){const button=figure.querySelector('.motion-toggle');const name=figure.querySelector('video').getAttribute('aria-label');button.textContent=playing?'Pause demo Ⅱ':'Play demo ▶';button.setAttribute('aria-label',(playing?'Pause ':'Play ')+name)}
+async function playDemo(figure){const video=figure.querySelector('video');if(!video.getAttribute('src'))video.src=video.dataset.src;try{await video.play();figure.classList.add('loaded');demoState(figure,true)}catch{demoState(figure,false)}}
+const demoObserver=new IntersectionObserver(entries=>{for(const entry of entries){const figure=entry.target;figure.dataset.visible=String(entry.isIntersecting);if(entry.isIntersecting&&!reducedMotion.matches&&figure.dataset.userPaused!=='true')playDemo(figure);else if(!entry.isIntersecting){figure.querySelector('video').pause();demoState(figure,false)}}},{threshold:.25});
+demos.forEach(figure=>{const video=figure.querySelector('video');figure.querySelector('.motion-toggle').addEventListener('click',()=>{if(video.paused){figure.dataset.userPaused='false';playDemo(figure)}else{figure.dataset.userPaused='true';video.pause();demoState(figure,false)}});video.addEventListener('error',()=>{figure.classList.remove('loaded');figure.querySelector('.demo-placeholder small').textContent='Demo unavailable here — view the NVIDIA source below.';demoState(figure,false)});demoObserver.observe(figure)});
+reducedMotion.addEventListener('change',()=>{demos.forEach(figure=>{if(reducedMotion.matches){figure.querySelector('video').pause();demoState(figure,false)}else if(figure.dataset.visible==='true'&&figure.dataset.userPaused!=='true')playDemo(figure)})});
+const waveform=document.querySelector('.waveform');for(let i=0;i<64;i++){const bar=document.createElement('i');bar.style.height=(8+Math.abs(Math.sin(i*.63)*Math.cos(i*.21))*65)+'px';waveform.append(bar)}

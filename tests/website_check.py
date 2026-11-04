@@ -47,8 +47,27 @@ def main():
         assert page.locator('#download-status').is_hidden()
         assert not errors,errors
         assert all(u.startswith(url.rstrip('/')) for u in requests),requests
+        assert page.locator('[data-demo]').count()==4
+        assert page.locator('video[src]').count()==0, 'Reduced motion should not automatically load external media'
+        if '--media' in sys.argv:
+            for figure in page.locator('[data-demo]').all():
+                figure.scroll_into_view_if_needed()
+                figure.locator('.motion-toggle').click()
+                figure.locator('video').evaluate('(video)=>new Promise((resolve,reject)=>{const deadline=setTimeout(()=>reject(new Error("Demo failed to play: "+video.dataset.src)),30000);const poll=setInterval(()=>{if(video.currentTime>0&&!video.paused){clearTimeout(deadline);clearInterval(poll);resolve()}},100)})')
+                assert 'loaded' in figure.get_attribute('class')
+                figure.locator('.motion-toggle').click()
+                assert figure.locator('video').evaluate('(video)=>video.paused')
+            allowed=('https://www.nvidia.com/','https://images.nvidia.com/')
+            assert all(u.startswith(url.rstrip('/')) or u.startswith(allowed) for u in requests),requests
+            page.set_viewport_size({'width':1440,'height':1100})
+            page.evaluate('window.scrollTo(0,0)')
+            page.screenshot(path=str(ROOT/'build/website-demos-1440.png'),full_page=False)
+            page.set_viewport_size({'width':390,'height':950})
+            page.screenshot(path=str(ROOT/'build/website-demos-390.png'),full_page=False)
         browser.close()
-    print('PASS: five responsive widths, effect tabs/keyboard, 13-effect list, FAQ, one installer link, download guidance and no external page requests.')
+    print('PASS: five responsive widths, effect tabs/keyboard, 13-effect list, FAQ, one installer link, download guidance and no automatic media requests with reduced motion.')
+    if '--media' in sys.argv:
+        print('PASS: all four NVIDIA-hosted reference videos play and pause; external requests limited to the attributed NVIDIA media hosts.')
 
 
 if __name__=='__main__':main()
