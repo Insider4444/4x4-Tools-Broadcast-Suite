@@ -1,4 +1,5 @@
 #include "core/frame.h"
+#include "core/render_cache.h"
 #include "nvidia/gpu.h"
 #include <algorithm>
 #include <cstring>
@@ -35,6 +36,13 @@ int main() {
         bool rejected = false;
         try { Frame invalid{argb, 20, 1, 4, PixelLayout::argb8}; (void)toBgr(invalid); } catch (const std::invalid_argument&) { rejected = true; }
         require(rejected, "Invalid stride accepted");
+        RenderCache cache(128);RenderKey firstKey;firstKey.append(a);cache.store(firstKey,b);
+        std::uint8_t cached[12];std::memset(cached,0xcd,sizeof(cached));
+        require(cache.restore(firstKey,{cached,2,1,12,PixelLayout::argb8}),"Rendered frame was not cached");
+        require(!std::memcmp(cached,output,8)&&cached[8]==0xcd,"Cached frame changed pixels or row padding");
+        argb[3]^=1;RenderKey changedKey;changedKey.append(a);
+        require(!cache.restore(changedKey,b),"Changed input incorrectly reused an old render");
+        cache.clear();require(!cache.restore(firstKey,b),"Clearing render cache retained media");
         require(!supportedArchitecture({0, 7, 5, 12080, 4ULL << 30, "NVIDIA GeForce GTX 1650"}), "GTX without Tensor Cores accepted");
         require(!supportedArchitecture({0, 12, 0, 12070, 12ULL << 30, "NVIDIA GeForce RTX 5070"}), "Old driver accepted");
         require(supportedArchitecture({0, 12, 0, 12080, 12ULL << 30, "NVIDIA GeForce RTX 5070"}), "Blackwell rejected");

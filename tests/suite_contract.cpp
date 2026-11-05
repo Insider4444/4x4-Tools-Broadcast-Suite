@@ -9,8 +9,8 @@
 #include <stdexcept>
 #include <vector>
 using Main=PF_Err (*)(PF_Cmd,PF_InData*,PF_OutData*,PF_ParamDef*[],PF_LayerDef*,void*);
-static std::array<PF_ParamDef,18> controls{};
-static PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* p) {if(index!=-1||p->uu.id<1||p->uu.id>=18) return 999;controls[p->uu.id]=*p;return 0;}
+static std::array<PF_ParamDef,19> controls{};
+static PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* p) {if(index!=-1||p->uu.id<1||p->uu.id>=19) return 999;controls[p->uu.id]=*p;return 0;}
 static PF_Err abortRender(PF_ProgPtr) {return 0;}
 void require(bool result,const char* text) {if(!result) throw std::runtime_error(text);}
 int wmain(int argc,wchar_t** argv) {
@@ -26,11 +26,12 @@ int wmain(int argc,wchar_t** argv) {
                 require(FindResourceW(module,MAKEINTRESOURCEW(16000),L"PiPL")!=nullptr,"Missing PiPL");
                 PF_InData in{};PF_OutData out{};in.inter.add_param=add;in.inter.abort=abortRender;
                 controls={};require(!main(PF_Cmd_GLOBAL_SETUP,&in,&out,nullptr,nullptr,nullptr),"Global setup failed");
-                require(out.my_version==PF_VERSION(0,2,0,PF_Stage_DEVELOP,1),"Wrong effect version");
+                require(out.my_version==PF_VERSION(0,2,1,PF_Stage_DEVELOP,1),"Wrong effect version");
                 require(audio?bool(out.out_flags&PF_OutFlag_AUDIO_EFFECT_ONLY):bool(out.out_flags2&PF_OutFlag2_SUPPORTS_SMART_RENDER),"Incorrect Adobe capability flags");
-                require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr)&&out.num_params==(audio?5:18),"Wrong parameter contract");
-                std::array<PF_ParamDef*,18> params{};for(int i=0;i<18;++i) params[i]=&controls[i];
-                require(controls[1].u.bd.value&&controls[2].u.fs_d.value==100,"Highest-quality defaults are not enabled");
+                require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr)&&out.num_params==(audio?7:19),"Wrong parameter contract");
+                std::array<PF_ParamDef*,19> params{};for(int i=0;i<19;++i) params[i]=&controls[i];
+                require(controls[1].u.bd.value&&controls[2].u.fs_d.value==100,"Effect and mix defaults are not enabled");
+                if(!audio)require(controls[3].u.pd.value==2,"New video instances must default to interactive processing");
                 controls[1].u.bd.value=0;
                 if(audio) {
                     std::array<float,18> source{},destination{};for(int i=0;i<18;++i) source[i]=i*.0173f;

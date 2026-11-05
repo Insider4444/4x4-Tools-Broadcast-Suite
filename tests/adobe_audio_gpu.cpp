@@ -13,9 +13,9 @@
 #include <vector>
 using Main=PF_Err (*)(PF_Cmd,PF_InData*,PF_OutData*,PF_ParamDef*[],PF_LayerDef*,void*);
 namespace {
-std::array<PF_ParamDef,5> controls{};
+std::array<PF_ParamDef,7> controls{};
 void require(bool value,const char* message) {if(!value) throw std::runtime_error(message);}
-PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* value) {if(index!=-1||value->uu.id<1||value->uu.id>=5) return 999;controls[value->uu.id]=*value;return 0;}
+PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* value) {if(index!=-1||value->uu.id<1||value->uu.id>=7) return 999;controls[value->uu.id]=*value;return 0;}
 PF_Err abortRender(PF_ProgPtr) {return 0;}
 }
 int wmain(int argc,wchar_t** argv) {
@@ -34,7 +34,7 @@ int wmain(int argc,wchar_t** argv) {
             in.total_sampL=count;in.src_snd.fi={48000,2,PF_SIGNED_FLOAT,PF_SSS_4};
             require(!main(PF_Cmd_GLOBAL_SETUP,&in,&out,nullptr,nullptr,nullptr),"Audio setup failed");
             controls={};require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr),"Audio parameter setup failed");
-            std::array<PF_ParamDef*,5> params{};for(int i=0;i<5;++i) params[i]=&controls[i];
+            std::array<PF_ParamDef*,7> params{};for(int i=0;i<7;++i) params[i]=&controls[i];
             auto render=[&](int start,int frames) {
                 in.start_sampL=start;in.dur_sampL=frames;
                 auto error=main(PF_Cmd_AUDIO_SETUP,&in,&out,params.data(),nullptr,nullptr);if(error) throw std::runtime_error(out.return_msg);

@@ -12,6 +12,9 @@
 #include "core/frame.h"
 #include "core/image_ops.h"
 #include "nvidia/video_effects.h"
+#include "core/processing_status.h"
+#include "core/render_cache.h"
+#include "ui/processing_panel.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -22,10 +25,11 @@
 
 using namespace fourbyfour;
 namespace {
-enum Param { Input,Enabled,Amount,Quality,KeepChair,Edge,Feather,ShowMask,Blur,Azimuth,Elevation,Exposure,Warmth,Zoom,Horizontal,Vertical,Compare,NoiseModel,Count };
+enum Param { Input,Enabled,Amount,Quality,KeepChair,Edge,Feather,ShowMask,Blur,Azimuth,Elevation,Exposure,Warmth,Zoom,Horizontal,Vertical,Compare,NoiseModel,Monitor,Count };
 constexpr bool removal=FOUR_VIDEO_KIND==0, blur=FOUR_VIDEO_KIND==1, relight=FOUR_VIDEO_KIND==2,
     denoise=FOUR_VIDEO_KIND==3, framing=FOUR_VIDEO_KIND==4, restoration=FOUR_VIDEO_KIND==5;
 constexpr bool segmented=removal||blur||relight||framing;
+RenderCache cache;
 bool premiere(PF_InData* in) { return in->appl_id=='PrMr'; }
 template<class T> class Suite {
     SPBasicSuite* basic; const char* name; int version;
@@ -63,7 +67,7 @@ PF_Err parameters(PF_InData* in_data,PF_OutData* out_data) {
     PF_ParamDef def{};
     PF_ADD_CHECKBOX("Effect","Enabled",TRUE,0,Enabled);
     def={}; PF_ADD_FLOAT_SLIDERX("Mix",0,100,0,100,100,1,PF_ValueDisplayFlag_PERCENT,0,Amount);
-    def={}; PF_ADD_POPUP("Processing Quality",2,1,"Highest Quality|Faster Preview",Quality);
+    def={}; PF_ADD_POPUP("Processing Quality",2,2,"Highest Quality (Render)|Interactive Preview",Quality);
     def={}; if(!segmented) def.ui_flags=PF_PUI_INVISIBLE;
     PF_ADD_CHECKBOX("Subject","Keep chair",FALSE,0,KeepChair);
     def={}; if(!segmented) def.ui_flags=PF_PUI_INVISIBLE;
@@ -91,10 +95,11 @@ PF_Err parameters(PF_InData* in_data,PF_OutData* out_data) {
     def={}; PF_ADD_CHECKBOX("Compare","Original left / effect right",FALSE,0,Compare);
     def={}; if(!denoise) def.ui_flags=PF_PUI_INVISIBLE;
     PF_ADD_POPUP("Noise Cleanup Model",2,1,"Preserve Fine Detail|Heavy Noise",NoiseModel);
+    PF_ADD_BUTTON("Processing", "Status and Quality…",PF_PUI_STD_CONTROL_ONLY,PF_ParamFlag_SUPERVISE,Monitor);
     out_data->num_params=Count; return PF_Err_NONE;
 }
 VideoResult model(std::span<const float> proxy,int w,int h,VideoEffect effect,const VideoSettings& s,std::span<const std::vector<float>> past = {}) {
-    if(denoise&&(w>1920||h>1080)) {
+    if(denoise&&!s.preview&&(w>1920||h>1080)) {
         // Full-resolution overlap tiles keep 4K detail instead of reducing a
         // whole frame to the webcam model's 1080p limit.
         const int tw=std::min(w,1920),th=std::min(h,1080),overlap=64;
@@ -124,27 +129,46 @@ VideoResult model(std::span<const float> proxy,int w,int h,VideoEffect effect,co
                 for(int c=0;c<3;++c) result.bgr[to*3+c]+=amount*processed.bgr[from*3+c];
             }
         }
-        for(std::size_t i=0;i<weight.size();++i) for(int c=0;c<3;++c) result.bgr[i*3+c]/=weight[i];
+        for(std::size_t i=0;i<weight.size();++i) for(int c=0;c<3;++c) result.bgr[i*3+c]=result.bgr[i*3+c]/weight[i]-proxy[i*3+c];
         return result;
     }
     // The person model requires >=512x288. Keep aspect ratio and resize back
     // rather than stretching a portrait or an Adobe half-resolution preview.
     int mw=w,mh=h;
-    const int minWidth=segmented?512:denoise?144:1,minHeight=segmented?288:denoise?80:1;
-    if(w<minWidth||h<minHeight) {
-        const double scale=std::max(double(minWidth)/w,double(minHeight)/h);
-        mw=static_cast<int>(std::ceil(w*scale)); mh=static_cast<int>(std::ceil(h*scale));
+    if(s.preview||relight) {
+        // Interactive requests do not run the webcam networks on an entire
+        // 4K/8K image. Lighting transfers a smooth gain onto full-size source
+        // texture, so it benefits from a bounded model image in both modes.
+        const double scale=s.preview?std::min({1.,1920./w,1080./h}):std::min(1.,1920./std::max(w,h));
+        mw=std::max(1,static_cast<int>(std::lround(w*scale)));
+        mh=std::max(1,static_cast<int>(std::lround(h*scale)));
     }
-    auto resized=resample(proxy,w,h,3,mw,mh);
+    const int minWidth=segmented?512:denoise?144:1,minHeight=segmented?288:denoise?80:1;
+    if(mw<minWidth||mh<minHeight) {
+        const double scale=std::max(double(minWidth)/mw,double(minHeight)/mh);
+        mw=static_cast<int>(std::ceil(mw*scale)); mh=static_cast<int>(std::ceil(mh*scale));
+    }
+    if(mw==w&&mh==h&&past.empty()&&!relight) {
+        auto result=processVideo(effect,proxy,w,h,s);
+        if(restoration||denoise)for(std::size_t i=0;i<result.bgr.size();++i)result.bgr[i]-=proxy[i];
+        return result;
+    }
+    auto resized=resampleProxy(proxy,w,h,3,mw,mh);
     std::vector<std::vector<float>> window;
-    for(const auto& frame:past) window.push_back(resample(frame,w,h,3,mw,mh));
+    for(const auto& frame:past) window.push_back(resampleProxy(frame,w,h,3,mw,mh));
     window.push_back(std::move(resized));
     auto result=processVideoWindow(effect,window,mw,mh,s);
+    if(relight) result.bgr=lightingGain(window.back(),result.bgr,mw,mh);
+    // Resize the correction once, keeping source texture at host resolution.
+    if(restoration||denoise)for(std::size_t i=0;i<result.bgr.size();++i)result.bgr[i]-=window.back()[i];
     if(mw!=w||mh!=h) {
-        if(!result.bgr.empty()) result.bgr=resample(result.bgr,mw,mh,3,w,h);
-        if(!result.matte.empty()) result.matte=resample(result.matte,mw,mh,1,w,h);
+        if(!result.bgr.empty()) result.bgr=resampleProxy(result.bgr,mw,mh,3,w,h);
+        if(!result.matte.empty()) result.matte=resampleProxy(result.matte,mw,mh,1,w,h);
+        if(blur) for(std::size_t i=0;i<result.matte.size();++i) for(int c=0;c<3;++c)
+            result.bgr[i*3+c]=proxy[i*3+c]*result.matte[i]+result.bgr[i*3+c]*(1-result.matte[i]);
         result.width=w; result.height=h;
     }
+    if(relight) for(std::size_t i=0;i<result.bgr.size();++i) result.bgr[i]*=proxy[i];
     return result;
 }
 PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& source,PF_EffectWorld& destination,bool smart=false,
@@ -153,17 +177,33 @@ PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& so
     auto input=frame(in,source,smart), output=frame(in,destination,smart);
     if(input.width!=output.width||input.height!=output.height||input.layout!=output.layout)
         throw std::runtime_error("Adobe supplied inconsistent full-frame image bounds.");
-    auto proxy=toBgrFloat(input);
     const float mix=params[Enabled]->u.bd.value?static_cast<float>(params[Amount]->u.fs_d.value/100):0.f;
     const bool compare=params[Compare]->u.bd.value!=0;
-    if(mix<=0) { applyFloatDelta(input,output,proxy,proxy,0); return PF_Err_NONE; }
+    if(mix<=0) {
+        for(int y=0;y<input.height;++y)std::memmove(static_cast<std::byte*>(output.pixels)+y*output.stride,static_cast<const std::byte*>(input.pixels)+y*input.stride,input.width*pixelBytes(input.layout));
+        return PF_Err_NONE;
+    }
+    processing::begin(FOUR_VIDEO_KIND,params[Quality]->u.pd.value==2?L"Interactive Preview":L"Highest Quality · Render");
+    RenderKey key;key.append(&in->effect_ref,sizeof(in->effect_ref));key.append(&in->current_time,sizeof(in->current_time));
+    key.append(&in->time_step,sizeof(in->time_step));key.append(input);
+    const std::array<double,17> controlKey{double(params[Enabled]->u.bd.value),params[Amount]->u.fs_d.value,double(params[Quality]->u.pd.value),
+        double(params[KeepChair]->u.bd.value),params[Edge]->u.fs_d.value,params[Feather]->u.fs_d.value,double(params[ShowMask]->u.bd.value),
+        params[Blur]->u.fs_d.value,params[Azimuth]->u.fs_d.value,params[Elevation]->u.fs_d.value,params[Exposure]->u.fs_d.value,params[Warmth]->u.fs_d.value,
+        params[Zoom]->u.fs_d.value,params[Horizontal]->u.fs_d.value,params[Vertical]->u.fs_d.value,double(params[Compare]->u.bd.value),double(params[NoiseModel]->u.pd.value)};
+    key.append(controlKey.data(),sizeof(controlKey));
+    for(const auto& adjacent:context)if(adjacent.pixels)key.append(adjacent);
+    if(cache.restore(key,output)){processing::finish(FOUR_VIDEO_KIND,L"Ready · reused cached frame");return PF_Err_NONE;}
+    auto complete=[&]{cache.store(key,output);processing::finish(FOUR_VIDEO_KIND);return PF_Err_NONE;};
+    auto proxy=toBgrFloat(input);
     // U8 models see a quantized proxy. Compare their output against that exact
     // proxy so unchanged pixels retain the host's original 16/32-bit precision.
-    if(!denoise) for(auto& value:proxy) value=std::round(value*255.f)/255.f;
-    if(PF_ABORT(in)) return PF_Interrupt_CANCEL;
+    if(!denoise) quantizeSdrProxy(proxy);
+    if(PF_ABORT(in)){processing::finish(FOUR_VIDEO_KIND,L"Cancelled");return PF_Interrupt_CANCEL;}
     VideoSettings settings;
+    settings.statusEffect=FOUR_VIDEO_KIND;
     settings.contextId=reinterpret_cast<std::uintptr_t>(in->effect_ref);settings.time=in->current_time;settings.timeStep=in->time_step;
     settings.preview=params[Quality]->u.pd.value==2; settings.keepChair=params[KeepChair]->u.bd.value!=0;
+    processing::report(FOUR_VIDEO_KIND,L"Preparing model images…",0,4);
     settings.strength=blur?static_cast<float>(params[Blur]->u.fs_d.value/100):denoise?(params[NoiseModel]->u.pd.value==2?1.f:0.f):1.f;
     settings.lightAzimuth=static_cast<float>(params[Azimuth]->u.fs_d.value);
     settings.lightElevation=static_cast<float>(params[Elevation]->u.fs_d.value);
@@ -173,20 +213,22 @@ PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& so
     std::vector<std::vector<float>> past;
     if(!settings.preview&&!restoration) for(std::size_t i=0;i<std::min<std::size_t>(context.size(),2);++i) {
         if(context[i].pixels&&context[i].width==input.width&&context[i].height==input.height) {
-            auto p=toBgrFloat(context[i]);if(!denoise) for(auto& v:p) v=std::round(v*255.f)/255.f;
+            auto p=toBgrFloat(context[i]);if(!denoise) quantizeSdrProxy(p);
             past.push_back(std::move(p));
         }
     }
     auto processed=model(proxy,input.width,input.height,effect,settings,past);
-    if(PF_ABORT(in)) return PF_Interrupt_CANCEL;
+    if(processing::cancelled(FOUR_VIDEO_KIND)){processing::finish(FOUR_VIDEO_KIND,L"Cancelled");return PF_Interrupt_CANCEL;}
+    processing::report(FOUR_VIDEO_KIND,L"Compositing original detail and alpha…",3,4);
+    if(PF_ABORT(in)){processing::finish(FOUR_VIDEO_KIND,L"Cancelled");return PF_Interrupt_CANCEL;}
     if(segmented) refineMatte(processed.matte,proxy,input.width,input.height,
         static_cast<float>(params[Edge]->u.fs_d.value/100),settings.preview?0.f:static_cast<float>(params[Feather]->u.fs_d.value));
-    if(segmented&&params[ShowMask]->u.bd.value) { showMatte(output,processed.matte); return PF_Err_NONE; }
-    if(removal) { applyFloatDelta(input,output,proxy,proxy,mix,compare,processed.matte); return PF_Err_NONE; }
+    if(segmented&&params[ShowMask]->u.bd.value) { showMatte(output,processed.matte);return complete(); }
+    if(removal) { applyFloatDelta(input,output,proxy,proxy,mix,compare,processed.matte);return complete(); }
     if(framing) {
         auto center=subjectCenter(processed.matte,input.width,input.height);
         auto rgba=toRgbaFloat(input);
-        if(!center.found) { applyFloatDelta(input,output,proxy,proxy,0); return PF_Err_NONE; }
+        if(!center.found) { applyFloatDelta(input,output,proxy,proxy,0); return complete(); }
         if(!settings.preview) {
             float x=center.centerX*4,y=center.centerY*4,total=4;
             for(const auto& adjacent:context) if(adjacent.pixels&&adjacent.width==input.width&&adjacent.height==input.height) {
@@ -207,11 +249,13 @@ PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& so
         if(compare) for(int y=0;y<input.height;++y) for(int x=0;x<input.width/2;++x) for(int c=0;c<4;++c) {
             const auto i=(static_cast<std::size_t>(y)*input.width+x)*4+c; transformed[i]=rgba[i];
         }
-        fromRgbaFloat(output,transformed); return PF_Err_NONE;
+        fromRgbaFloat(output,transformed);return complete();
     }
     if(relight) for(std::size_t i=0;i<processed.matte.size();++i) for(int c=0;c<3;++c)
         processed.bgr[i*3+c]=proxy[i*3+c]+processed.matte[i]*(processed.bgr[i*3+c]-proxy[i*3+c]);
-    applyFloatDelta(input,output,proxy,processed.bgr,mix,compare); return PF_Err_NONE;
+    if(restoration||denoise)applyModelDelta(input,output,processed.bgr,mix,compare);
+    else applyFloatDelta(input,output,proxy,processed.bgr,mix,compare);
+    return complete();
 }
 PF_Err preRender(PF_InData* in,PF_PreRenderExtra* extra) {
     if(!extra||!extra->input||!extra->output||!extra->cb) return PF_Err_BAD_CALLBACK_PARAM;
@@ -284,7 +328,7 @@ extern "C" DllExport PF_Err EffectMain(PF_Cmd command,PF_InData* in,PF_OutData* 
     try {
         switch(command) {
         case PF_Cmd_ABOUT:
-            if(out) std::snprintf(out->return_msg,sizeof(out->return_msg),"%s 0.2.0\r4x4Tools | NVIDIA Maxine\rHighest quality by default. Local SDR model processing.",FOUR_EFFECT_NAME);
+            if(out) std::snprintf(out->return_msg,sizeof(out->return_msg),"%s 0.2.1\r4x4Tools | NVIDIA Maxine\rInteractive Preview by default. Choose Highest Quality for renders.",FOUR_EFFECT_NAME);
             break;
         case PF_Cmd_GLOBAL_SETUP:
             if(!in||!out) return PF_Err_BAD_CALLBACK_PARAM;
@@ -297,18 +341,25 @@ extern "C" DllExport PF_Err EffectMain(PF_Cmd command,PF_InData* in,PF_OutData* 
                 if(error) return error;
             } break;
         case PF_Cmd_PARAMS_SETUP: return parameters(in,out);
+        case PF_Cmd_USER_CHANGED_PARAM:
+            if(in&&out&&params&&extra&&static_cast<PF_UserChangedParamExtra*>(extra)->param_index==Monitor) {
+                const int current=params[Quality]->u.pd.value==2?1:2;
+                const int selected=ui::showPanel(FOUR_VIDEO_KIND,current,true);
+                if(selected!=current){params[Quality]->u.pd.value=selected==1?2:1;params[Quality]->uu.change_flags|=PF_ChangeFlag_CHANGED_VALUE;out->out_flags|=PF_OutFlag_FORCE_RERENDER;}
+            }break;
         case PF_Cmd_RENDER:
             if(!in||!params||!params[0]||!result) return PF_Err_BAD_CALLBACK_PARAM;
             return legacyRender(in,out,params,*result);
         case PF_Cmd_SMART_PRE_RENDER: return preRender(in,static_cast<PF_PreRenderExtra*>(extra));
         case PF_Cmd_SMART_RENDER: return smartRender(in,out,static_cast<PF_SmartRenderExtra*>(extra));
-        case PF_Cmd_GLOBAL_SETDOWN: shutdownVideo(); break;
+        case PF_Cmd_SEQUENCE_SETDOWN:
+        case PF_Cmd_GLOBAL_SETDOWN: cache.clear();shutdownVideo(); break;
         default: break;
         }
         return PF_Err_NONE;
-    } catch(const std::bad_alloc&) { return PF_Err_OUT_OF_MEMORY; }
-    catch(const std::exception& e) { return fail(out,e.what()); }
-    catch(...) { return fail(out,"Unexpected processing error."); }
+    } catch(const std::bad_alloc&) { processing::finish(FOUR_VIDEO_KIND,L"Stopped · not enough memory");return PF_Err_OUT_OF_MEMORY; }
+    catch(const std::exception& e) { processing::finish(FOUR_VIDEO_KIND,L"Processing stopped · see Adobe's error message");return fail(out,e.what()); }
+    catch(...) { processing::finish(FOUR_VIDEO_KIND,L"Processing stopped");return fail(out,"Unexpected processing error."); }
 }
 extern "C" DllExport PF_Err PluginDataEntryFunction2(PF_PluginDataPtr inPtr,PF_PluginDataCB2 callback,SPBasicSuite*,const char*,const char*) {
     if(!callback) return PF_Err_BAD_CALLBACK_PARAM;

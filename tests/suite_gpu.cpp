@@ -19,7 +19,7 @@
 using namespace fourbyfour;
 using Main=PF_Err (*)(PF_Cmd,PF_InData*,PF_OutData*,PF_ParamDef*[],PF_LayerDef*,void*);
 namespace {
-std::array<PF_ParamDef,18> controls{};
+std::array<PF_ParamDef,19> controls{};
 PF_EffectWorld *sourceWorld{},*outputWorld{};
 PF_PixelFormatSuite1 prPixels{};PF_WorldSuite2 aeWorld{};
 PrPixelFormat prFormat{};PF_PixelFormat aeFormat{};
@@ -35,10 +35,10 @@ SPErr acquire(const char* name,int32 version,const void** result) {
     return 999;
 }
 SPErr release(const char*,int32) {return 0;}
-PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* p) {if(index!=-1||p->uu.id<1||p->uu.id>=18) return 999;controls[p->uu.id]=*p;return 0;}
+PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* p) {if(index!=-1||p->uu.id<1||p->uu.id>=19) return 999;controls[p->uu.id]=*p;return 0;}
 PF_Err abortRender(PF_ProgPtr) {return 0;}
 PF_Err checkout(PF_ProgPtr,PF_ParamIndex index,A_long,A_long,A_u_long,PF_ParamDef* value) {
-    if(index<0||index>=18) return 999;*value=controls[index];++acquisitions;return 0;
+    if(index<0||index>=19) return 999;*value=controls[index];++acquisitions;return 0;
 }
 PF_Err checkin(PF_ProgPtr,PF_ParamDef*) {++checkins;return 0;}
 PF_Err checkoutLayer(PF_ProgPtr,PF_ParamIndex index,A_long,const PF_RenderRequest* request,A_long,A_long,A_u_long,PF_CheckoutResult* result) {
@@ -83,10 +83,11 @@ int wmain(int argc,wchar_t** argv) {
                 aeFormat=smart?PF_PixelFormat_ARGB128:layout==PixelLayout::argb16?PF_PixelFormat_ARGB64:PF_PixelFormat_ARGB32;
                 controls={};require(!main(PF_Cmd_GLOBAL_SETUP,&in,&out,nullptr,nullptr,nullptr),"Global setup failed");
                 require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr),"Parameter setup failed");
+                if(!eye)controls[3].u.pd.value=1;
                 controls[eye?4:16].u.bd.value=1;
                 auto& world=controls[0].u.ld;world.width=w;world.height=h;world.rowbytes=stride;world.data=reinterpret_cast<PF_Pixel*>(src.data());world.world_flags=layout==PixelLayout::argb16?PF_WorldFlag_DEEP:0;
                 PF_EffectWorld target=world;target.data=reinterpret_cast<PF_Pixel*>(dst.data());sourceWorld=&world;outputWorld=&target;
-                std::array<PF_ParamDef*,18> params{};for(int i=0;i<18;++i) params[i]=&controls[i];
+                std::array<PF_ParamDef*,19> params{};for(int i=0;i<19;++i) params[i]=&controls[i];
                 acquisitions=checkins=0;PF_Err error{};
                 auto render=[&] {
                     if(smart) {

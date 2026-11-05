@@ -13,6 +13,7 @@ struct VideoSettings {
     int outputWidth{}, outputHeight{};
     std::uintptr_t contextId{};
     std::int64_t time{},timeStep{};
+    int statusEffect{-1};
 };
 struct VideoResult {
     int width{}, height{};

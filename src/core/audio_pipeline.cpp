@@ -28,12 +28,30 @@ void AudioPipeline::reset() {
     wetQueue.assign(static_cast<std::size_t>(delay-modelDelay),{}); dryQueue.assign(static_cast<std::size_t>(delay),{});
     for(auto& channel:input) std::fill(channel.begin(),channel.end(),0);
     for(auto& channel:output) std::fill(channel.begin(),channel.end(),0);
-    currentMix=1;currentGain=1;first=true;
+    currentMix=1;currentGain=1;first=true;suspended=false;
 }
 void AudioPipeline::process(const float* const* src,float* const* dst,int frames,float mix,float gainDb,bool bypass) {
     if(!src||!dst||frames<0||!std::isfinite(mix)||!std::isfinite(gainDb)) throw std::invalid_argument("Invalid audio process buffer.");
     for(int c=0;c<channelCount;++c) if(!src[c]||!dst[c]) throw std::invalid_argument("Missing audio channel buffer.");
     const float targetMix=bypass?0.f:std::clamp(mix,0.f,1.f),targetGain=std::pow(10.f,std::clamp(gainDb,-60.f,24.f)/20);
+    if(targetMix==0) {
+        // Bypass must stop inference, not merely mix its expensive output away.
+        // Retain the advertised delay so the host's latency compensation holds.
+        for(int i=0;i<frames;++i) {
+            std::array<float,2> frame{};
+            for(int c=0;c<channelCount;++c)frame[c]=std::isfinite(src[c][i])?src[c][i]:0.f;
+            dryQueue.push_back(frame);const auto dry=dryQueue.front();dryQueue.pop_front();
+            for(int c=0;c<channelCount;++c)dst[c][i]=dry[c]*targetGain;
+        }
+        suspended=true;return;
+    }
+    if(suspended) {
+        // Resume a clean wet history while preserving the running dry clock.
+        engine.reset();inputConverter.reset();outputConverter.reset();position=0;
+        wetQueue.assign(static_cast<std::size_t>(delay-modelDelay),{});
+        for(auto& channel:input)std::fill(channel.begin(),channel.end(),0.f);
+        currentMix=targetMix;currentGain=targetGain;suspended=false;
+    }
     if(first) { currentMix=targetMix;currentGain=targetGain;first=false; }
     const float smoothing=1.f-std::exp(-1.f/(rate*.02f));
     for(int i=0;i<frames;++i) {
@@ -43,7 +61,9 @@ void AudioPipeline::process(const float* const* src,float* const* dst,int frames
         while(inputConverter.take(frame)) {
             for(int c=0;c<channelCount;++c) input[c][position]=frame[c];
             if(++position==engine.inputFrames()) {
-                engine.run(std::span(inputs.data(),channelCount),std::span(outputs.data(),channelCount)); position=0;
+                position=0;
+                try{engine.run(std::span(inputs.data(),channelCount),std::span(outputs.data(),channelCount));}
+                catch(...){suspended=true;throw;}
                 for(int j=0;j<engine.outputFrames();++j) {
                     for(int c=0;c<channelCount;++c) frame[c]=output[c][j];
                     outputConverter.push(frame);

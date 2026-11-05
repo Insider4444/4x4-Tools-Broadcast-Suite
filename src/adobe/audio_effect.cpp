@@ -6,6 +6,8 @@
 #include "entry.h"
 #include "EffectSpec.h"
 #include "core/audio_pipeline.h"
+#include "core/processing_status.h"
+#include "ui/processing_panel.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -19,7 +21,7 @@
 
 using namespace fourbyfour;
 namespace {
-enum Param { Input,Enabled,Mix,Gain,Profile,Count };
+enum Param { Input,Enabled,Mix,Gain,Profile,Quality,Monitor,Count };
 constexpr auto kind=static_cast<AudioEffect>(FOUR_VIDEO_KIND);
 struct Range { A_long first{},last{},window{}; };
 Range sourceRange(PF_InData* in) {
@@ -36,6 +38,7 @@ Range sourceRange(PF_InData* in) {
 std::mutex mutex;
 std::unique_ptr<AudioPipeline> pipeline;
 int pipelineRate{},pipelineChannels{},pipelineProfile{-99};
+AudioEffect pipelineEffect{};
 struct Cache { std::uint64_t hash{};std::vector<float> samples; };
 std::deque<Cache> cache;
 std::uint64_t hashInput(std::span<const float> data,int rate,int channels,int profile,A_long windowOffset) {
@@ -47,13 +50,14 @@ std::uint64_t hashInput(std::span<const float> data,int rate,int channels,int pr
     append(data.data(),data.size_bytes());append(&rate,sizeof(rate));append(&channels,sizeof(channels));append(&profile,sizeof(profile));append(&windowOffset,sizeof(windowOffset));
     return result;
 }
-std::vector<float> window(std::span<const float> data,int rate,int channels,int profile,A_long crop,A_long length) {
-    const auto hash=hashInput(data,rate,channels,profile,crop);
-    for(const auto& item:cache) if(item.hash==hash&&item.samples.size()==static_cast<std::size_t>(length)*channels) return item.samples;
-    if(!pipeline||pipelineRate!=rate||pipelineChannels!=channels||pipelineProfile!=profile) {
+std::vector<float> window(std::span<const float> data,int rate,int channels,int profile,A_long crop,A_long length,AudioEffect selected) {
+    const auto hash=hashInput(data,rate,channels,profile,crop)^static_cast<std::uint64_t>(selected);
+    for(const auto& item:cache) if(item.hash==hash&&item.samples.size()==static_cast<std::size_t>(length)*channels) {processing::finish(7+FOUR_VIDEO_KIND,L"Ready · reused cached audio");return item.samples;}
+    if(!pipeline||pipelineRate!=rate||pipelineChannels!=channels||pipelineProfile!=profile||pipelineEffect!=selected) {
         pipeline.reset();cache.clear();
-        pipeline=std::make_unique<AudioPipeline>(AudioSettings{kind,channels,profile},rate);
+        pipeline=std::make_unique<AudioPipeline>(AudioSettings{selected,channels,profile,7+FOUR_VIDEO_KIND},rate);
         pipelineRate=rate;pipelineChannels=channels;pipelineProfile=profile;
+        pipelineEffect=selected;
     } else pipeline->reset();
     constexpr int block=2048;
     std::array<std::array<float,block>,2> input{},output{};
@@ -101,7 +105,8 @@ PF_Err render(PF_InData* in,PF_OutData* out,PF_ParamDef* params[]) {
         const auto first=std::clamp<A_long>(contextStart-sourceStart,0,src.num_samples);
         const auto last=std::clamp<A_long>(contextEnd-sourceStart,first,src.num_samples);
         const auto available=std::span(source+static_cast<std::size_t>(first)*channels,static_cast<std::size_t>(last-first)*channels);
-        const auto processed=window(available,rate,channels,profile,blockStart-contextStart,range.window);
+        const auto selected=kind==AudioEffect::studioQuality&&params[Quality]->u.pd.value==1?AudioEffect::studioPreview:kind;
+        const auto processed=window(available,rate,channels,profile,blockStart-contextStart,range.window,selected);
         const A_long within=absolute-blockStart,count=std::min(outputFrames-offset,range.window-within);
         for(A_long i=0;i<count;++i) for(int c=0;c<channels;++c) {
             const auto target=static_cast<std::size_t>(offset+i)*channels+c;
@@ -121,24 +126,38 @@ PF_Err parameters(PF_InData* in_data,PF_OutData* out_data) {
     def={};if(kind!=AudioEffect::studioPreview) def.ui_flags=PF_PUI_INVISIBLE;
     def.flags=PF_ParamFlag_CANNOT_TIME_VARY;
     PF_ADD_POPUP("Microphone Character",7,1,"Natural|Bright|Vibrant|Flat|Full|Thin|Warm",Profile);
+    def={};def.flags=PF_ParamFlag_CANNOT_TIME_VARY|PF_ParamFlag_USE_VALUE_FOR_OLD_PROJECTS;
+    if(kind!=AudioEffect::studioQuality)def.ui_flags=PF_PUI_INVISIBLE;
+    def.param_type=PF_Param_POPUP;PF_STRNNCPY(def.PF_DEF_NAME,"Processing",sizeof(def.PF_DEF_NAME));
+    def.u.pd.num_choices=2;def.u.pd.dephault=1;def.u.pd.value=2;
+    def.u.pd.u.PF_DEF_NAMESPTR="Interactive Preview|Highest Quality (Render)";def.uu.id=Quality;
+    {const auto error=PF_ADD_PARAM(in_data,-1,&def);if(error)return error;}
+    PF_ADD_BUTTON("Processing Monitor","Status and Quality…",PF_PUI_STD_CONTROL_ONLY,PF_ParamFlag_SUPERVISE,Monitor);
     out_data->num_params=Count;return PF_Err_NONE;
 }
 }
-extern "C" DllExport PF_Err EffectMain(PF_Cmd command,PF_InData* in,PF_OutData* out,PF_ParamDef* params[],PF_LayerDef*,void*) {
+extern "C" DllExport PF_Err EffectMain(PF_Cmd command,PF_InData* in,PF_OutData* out,PF_ParamDef* params[],PF_LayerDef*,void* extra) {
     try {
         switch(command) {
         case PF_Cmd_ABOUT:
-            if(out) std::snprintf(out->return_msg,sizeof(out->return_msg),"%s 0.2.0\r4x4Tools | NVIDIA Maxine\rNative After Effects audio; deterministic analysis windows.",FOUR_EFFECT_NAME);break;
+            if(out) std::snprintf(out->return_msg,sizeof(out->return_msg),"%s 0.2.1\r4x4Tools | NVIDIA Maxine\rNative After Effects audio; deterministic analysis windows.",FOUR_EFFECT_NAME);break;
         case PF_Cmd_GLOBAL_SETUP:
             if(!in||!out) return PF_Err_BAD_CALLBACK_PARAM;
             out->my_version=FOUR_VERSION;out->out_flags=FOUR_FLAGS;out->out_flags2=FOUR_FLAGS2;break;
         case PF_Cmd_PARAMS_SETUP:return parameters(in,out);
+        case PF_Cmd_USER_CHANGED_PARAM:
+            if(in&&out&&params&&extra&&static_cast<PF_UserChangedParamExtra*>(extra)->param_index==Monitor) {
+                const auto current=params[Quality]->u.pd.value;
+                const auto selected=ui::showPanel(7+FOUR_VIDEO_KIND,current,kind==AudioEffect::studioQuality);
+                if(current!=selected){params[Quality]->u.pd.value=selected;params[Quality]->uu.change_flags|=PF_ChangeFlag_CHANGED_VALUE;out->out_flags|=PF_OutFlag_FORCE_RERENDER;}
+            }break;
         case PF_Cmd_AUDIO_SETUP:
             if(!in||!out||!params) return PF_Err_BAD_CALLBACK_PARAM;
             if(params[Enabled]->u.bd.value&&params[Mix]->u.fs_d.value>0) {
                 const auto range=sourceRange(in);out->start_sampL=range.first;out->dur_sampL=range.last-range.first;
             } else {out->start_sampL=in->start_sampL;out->dur_sampL=in->dur_sampL;}break;
         case PF_Cmd_AUDIO_RENDER:return render(in,out,params);
+        case PF_Cmd_SEQUENCE_SETDOWN:
         case PF_Cmd_GLOBAL_SETDOWN:{std::lock_guard lock(mutex);cache.clear();pipeline.reset();break;}
         default:break;
         }

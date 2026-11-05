@@ -5,7 +5,7 @@
 #include <vector>
 namespace fourbyfour {
 enum class AudioEffect { noise, echo, clean, studioPreview, studioQuality, restore };
-struct AudioSettings { AudioEffect effect{AudioEffect::clean}; int channels{1}; int micProfile{-1}; };
+struct AudioSettings { AudioEffect effect{AudioEffect::clean}; int channels{1}; int micProfile{-1}; int statusEffect{-1}; };
 class AudioEngine {
     struct Impl;
     std::unique_ptr<Impl> impl;

@@ -1,6 +1,8 @@
 #include "video_effects.h"
 #include "gpu.h"
 #include "runtime_path.h"
+#include "cuda_context.h"
+#include "core/processing_status.h"
 #include "nvVideoEffects.h"
 #include "nvVFXGreenScreen.h"
 #include "nvVFXBackgroundBlur.h"
@@ -74,23 +76,16 @@ struct Api {
             (errorText ? errorText(status) : "NVIDIA error") + " (" + std::to_string(int(status)) + ")");
     }
 };
-struct DeviceGuard {
-    Api& api; int previous{-1};
-    DeviceGuard(Api& a, int gpu) : api(a) {
-        if (api.getDevice(&previous)) previous = -1;
-        if (api.setDevice(gpu)) throw std::runtime_error("Cannot select the NVIDIA GPU.");
-    }
-    ~DeviceGuard() { if (previous >= 0) api.setDevice(previous); }
-};
 struct Filter {
     Api& api; NvVFX_Handle handle{}; NvVFX_StateObjectHandle state{};
     explicit Filter(Api& a) : api(a) {}
     ~Filter() { clear(); }
-    void clear() {
-        if (handle && state) api.deallocateState(handle, state);
-        state = nullptr;
-        if (handle) api.destroy(handle);
-        handle = nullptr;
+    void clear() noexcept {
+        const auto oldHandle=handle;const auto oldState=state;handle=nullptr;state=nullptr;
+        // A vendor C++ exception during cleanup must not terminate Adobe from
+        // an implicitly-noexcept destructor while handling the original error.
+        if(oldHandle&&oldState)try{api.deallocateState(oldHandle,oldState);}catch(...){}
+        if(oldHandle)try{api.destroy(oldHandle);}catch(...){}
     }
     void create(const char* name, const fs::path& root, CUstream stream) {
         clear(); api.check(api.create(name, &handle), name);
@@ -120,7 +115,7 @@ struct Filter {
     }
 };
 struct Engine {
-    fs::path root; fourbyfour::Gpu gpu; Api api;
+    fs::path root; fourbyfour::Gpu gpu; fourbyfour::CudaContext context; Api api;
     CUstream stream{};
     Filter segment{api}, filter{api};
     std::unique_ptr<NvCVImage> input, output, mask, projection, temp;
@@ -129,8 +124,8 @@ struct Engine {
     int width{}, height{}, outWidth{}, outHeight{}, selectedMode{-1};
     fourbyfour::VideoEffect selected{fourbyfour::VideoEffect::matte};
     fourbyfour::VideoSettings previous{};
-    explicit Engine(fs::path sdk) : root(std::move(sdk)), gpu(fourbyfour::selectGpu()), api(root) {
-        DeviceGuard guard(api, gpu.ordinal); api.check(api.streamCreate(&stream), "Create video stream");
+    explicit Engine(fs::path sdk) : root(std::move(sdk)), gpu(fourbyfour::selectGpu()), context(gpu.ordinal), api(root) {
+        fourbyfour::CudaContext::Guard guard(context); api.check(api.streamCreate(&stream), "Create video stream");
     }
     void clear() {
         if (stream) api.streamSync(stream);
@@ -139,7 +134,7 @@ struct Engine {
         width = height = outWidth = outHeight = 0;
     }
     ~Engine() {
-        try { DeviceGuard guard(api, gpu.ordinal); clear(); if (stream) api.streamDestroy(stream); } catch (...) {}
+        try { fourbyfour::CudaContext::Guard guard(context); clear(); if (stream) api.streamDestroy(stream); } catch (...) {}
     }
     std::unique_ptr<NvCVImage> image(int w, int h, NvCVImage_PixelFormat format,
                                      NvCVImage_ComponentType type, unsigned planar = NVCV_CHUNKY) {
@@ -160,6 +155,7 @@ struct Engine {
             return;
         }
         clear(); width = w; height = h; outWidth = ow; outHeight = oh; selected = effect; selectedMode = mode;
+        fourbyfour::processing::report(s.statusEffect,L"Loading NVIDIA picture models…");
         const bool segmentation = effect == E::matte || effect == E::blur || effect == E::relight;
         const bool floating = effect == E::denoise;
         const bool vsr = effect == E::superResolution;
@@ -224,11 +220,12 @@ struct Engine {
     }
     fourbyfour::VideoResult process(std::span<const float> bgr, const fourbyfour::VideoSettings& s,bool reset = true) {
         using E = fourbyfour::VideoEffect;
-        DeviceGuard guard(api, gpu.ordinal);
+        fourbyfour::CudaContext::Guard guard(context);
         NvCVImage host;
         api.check(api.init(&host, width, height, width * 3 * sizeof(float), const_cast<float*>(bgr.data()), NVCV_BGR, NVCV_F32, NVCV_CHUNKY, NVCV_CPU), "Describe input image");
         const bool floating = selected == E::denoise;
         api.check(api.transfer(&host, input.get(), floating ? 1.f : 255.f, stream, temp.get()), "Upload video image");
+        fourbyfour::processing::report(s.statusEffect,L"Processing the NVIDIA model…");
         if (mask) segment.run(reset);
         if (selected == E::relight) { studioLight(s); filter.image(NVVFX_INPUT_IMAGE_2, environment); }
         if (output && width == outWidth && height == outHeight)
@@ -265,7 +262,7 @@ extern "C" NvCV_Status NvCV_API NvCVImage_Alloc(NvCVImage* i, unsigned w, unsign
 }
 extern "C" void NvCV_API NvCVImage_Dealloc(NvCVImage* i) {
     const auto mod = imageModule.load(); const auto fn = mod ? reinterpret_cast<decltype(&NvCVImage_Dealloc)>(GetProcAddress(mod, "NvCVImage_Dealloc")) : nullptr;
-    if (fn) fn(i);
+    if(fn)try{fn(i);}catch(...){}
 }
 extern "C" void NvCV_API NvCVImage_InitView(NvCVImage* i, NvCVImage* f, int x, int y, unsigned w, unsigned h) {
     const auto mod = imageModule.load(); const auto fn = mod ? reinterpret_cast<decltype(&NvCVImage_InitView)>(GetProcAddress(mod, "NvCVImage_InitView")) : nullptr;
@@ -289,7 +286,7 @@ VideoResult processVideo(VideoEffect effect, std::span<const float> bgr, int w, 
     const auto root = sdk.empty() ? videoRuntimeRoot() : fs::absolute(sdk);
     try {
         if (!engine || engine->root != root) { engine.reset(); engine = std::make_unique<Engine>(root); }
-        DeviceGuard guard(engine->api, engine->gpu.ordinal);
+        CudaContext::Guard guard(engine->context);
         engine->configure(effect,w,h,settings);
         return engine->process(bgr,settings);
     } catch (...) { engine.reset(); throw; }
@@ -303,7 +300,7 @@ VideoResult processVideoWindow(VideoEffect effect,std::span<const std::vector<fl
     const auto root=sdk.empty()?videoRuntimeRoot():fs::absolute(sdk);
     try {
         if(!engine||engine->root!=root) {engine.reset();engine=std::make_unique<Engine>(root);}
-        DeviceGuard guard(engine->api,engine->gpu.ordinal);
+        CudaContext::Guard guard(engine->context);
         engine->configure(effect,w,h,settings);
         VideoResult result;
         for(std::size_t i=0;i<frames.size();++i) result=engine->process(frames[i],settings,i==0);

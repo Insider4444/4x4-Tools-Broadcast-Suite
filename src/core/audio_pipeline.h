@@ -13,6 +13,8 @@ namespace fourbyfour {
 class AudioResampler {
     int channels{},sourceRate{},destinationRate{},radius{};
     double cutoff{};
+    struct Phase { int first{}; std::vector<double> weights; };
+    std::vector<Phase> phases;
     std::int64_t base{},received{},generated{};
     std::deque<std::array<float,2>> history,ready;
 public:
@@ -33,6 +35,7 @@ class AudioPipeline {
     std::deque<std::array<float,2>> wetQueue,dryQueue;
     float currentMix{1},currentGain{1};
     bool first{true};
+    bool suspended{};
 public:
     AudioPipeline(const AudioSettings&,int sampleRate,const std::filesystem::path& sdk = {});
     int latency() const { return delay; }

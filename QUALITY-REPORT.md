@@ -2,6 +2,8 @@
 
 **0.2.0 · 3 November 2026.** Eye Contact has been user-tested in After Effects. The expanded suite still needs broader acceptance in real Adobe timelines and exports.
 
+**Local patch 0.2.1 · 5 November 2026:** processing controls, model lifetime/context fixes, bounded previews, caching and source-texture relighting are in local acceptance testing. See the [patch notes and validation limits](docs/LOCAL-PATCH-0.2.1.md). The public installer has not yet been updated to this native patch.
+
 The development machine is Windows x64 with an RTX 5070 (12 GB). The suite was compiled against Adobe SDK 25.6 using MSVC. Other model families have not been physically tested; including their vendor models does not establish compatibility on every card.
 
 ## Checks and their scope
