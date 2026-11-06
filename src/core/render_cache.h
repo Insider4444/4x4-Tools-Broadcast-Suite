@@ -9,7 +9,10 @@
 namespace fourbyfour {
 class RenderKey {
     std::array<std::uint64_t,2> hash{0x6a09e667f3bcc909ull,0xbb67ae8584caa73bull};
+    std::uintptr_t instance{};
 public:
+    explicit RenderKey(std::uintptr_t owner=0):instance(owner){}
+    std::uintptr_t owner()const{return instance;}
     void append(const void* data,std::size_t bytes);
     void append(const Frame& frame);
     bool operator==(const RenderKey&) const=default;
@@ -25,5 +28,6 @@ public:
     bool restore(const RenderKey&,const Frame& output);
     void store(const RenderKey&,const Frame& output);
     void clear();
+    void clear(std::uintptr_t owner);
 };
 }

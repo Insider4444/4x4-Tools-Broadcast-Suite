@@ -39,6 +39,7 @@ std::mutex mutex;
 std::unique_ptr<AudioPipeline> pipeline;
 int pipelineRate{},pipelineChannels{},pipelineProfile{-99};
 AudioEffect pipelineEffect{};
+std::uintptr_t pipelineOwner{};
 struct Cache { std::uint64_t hash{};std::vector<float> samples; };
 std::deque<Cache> cache;
 std::uint64_t hashInput(std::span<const float> data,int rate,int channels,int profile,A_long windowOffset) {
@@ -50,7 +51,7 @@ std::uint64_t hashInput(std::span<const float> data,int rate,int channels,int pr
     append(data.data(),data.size_bytes());append(&rate,sizeof(rate));append(&channels,sizeof(channels));append(&profile,sizeof(profile));append(&windowOffset,sizeof(windowOffset));
     return result;
 }
-std::vector<float> window(std::span<const float> data,int rate,int channels,int profile,A_long crop,A_long length,AudioEffect selected) {
+std::vector<float> window(std::span<const float> data,int rate,int channels,int profile,A_long crop,A_long length,AudioEffect selected,std::uintptr_t owner) {
     const auto hash=hashInput(data,rate,channels,profile,crop)^static_cast<std::uint64_t>(selected);
     for(const auto& item:cache) if(item.hash==hash&&item.samples.size()==static_cast<std::size_t>(length)*channels) {processing::finish(7+FOUR_VIDEO_KIND,L"Ready · reused cached audio");return item.samples;}
     if(!pipeline||pipelineRate!=rate||pipelineChannels!=channels||pipelineProfile!=profile||pipelineEffect!=selected) {
@@ -59,6 +60,7 @@ std::vector<float> window(std::span<const float> data,int rate,int channels,int 
         pipelineRate=rate;pipelineChannels=channels;pipelineProfile=profile;
         pipelineEffect=selected;
     } else pipeline->reset();
+    pipelineOwner=owner;
     constexpr int block=2048;
     std::array<std::array<float,block>,2> input{},output{};
     const float* sources[]{input[0].data(),input[1].data()};float* destinations[]{output[0].data(),output[1].data()};
@@ -106,7 +108,7 @@ PF_Err render(PF_InData* in,PF_OutData* out,PF_ParamDef* params[]) {
         const auto last=std::clamp<A_long>(contextEnd-sourceStart,first,src.num_samples);
         const auto available=std::span(source+static_cast<std::size_t>(first)*channels,static_cast<std::size_t>(last-first)*channels);
         const auto selected=kind==AudioEffect::studioQuality&&params[Quality]->u.pd.value==1?AudioEffect::studioPreview:kind;
-        const auto processed=window(available,rate,channels,profile,blockStart-contextStart,range.window,selected);
+        const auto processed=window(available,rate,channels,profile,blockStart-contextStart,range.window,selected,reinterpret_cast<std::uintptr_t>(in->effect_ref));
         const A_long within=absolute-blockStart,count=std::min(outputFrames-offset,range.window-within);
         for(A_long i=0;i<count;++i) for(int c=0;c<channels;++c) {
             const auto target=static_cast<std::size_t>(offset+i)*channels+c;
@@ -157,7 +159,7 @@ extern "C" DllExport PF_Err EffectMain(PF_Cmd command,PF_InData* in,PF_OutData* 
                 const auto range=sourceRange(in);out->start_sampL=range.first;out->dur_sampL=range.last-range.first;
             } else {out->start_sampL=in->start_sampL;out->dur_sampL=in->dur_sampL;}break;
         case PF_Cmd_AUDIO_RENDER:return render(in,out,params);
-        case PF_Cmd_SEQUENCE_SETDOWN:
+        case PF_Cmd_SEQUENCE_SETDOWN:{std::lock_guard lock(mutex);if(in&&pipelineOwner==reinterpret_cast<std::uintptr_t>(in->effect_ref)){cache.clear();pipeline.reset();pipelineOwner=0;}break;}
         case PF_Cmd_GLOBAL_SETDOWN:{std::lock_guard lock(mutex);cache.clear();pipeline.reset();break;}
         default:break;
         }

@@ -38,4 +38,8 @@ void RenderCache::store(const RenderKey& key,const Frame& output) {
     used+=bytes;entries.push_front(std::move(entry));
 }
 void RenderCache::clear(){std::lock_guard lock(mutex);entries.clear();used=0;}
+void RenderCache::clear(std::uintptr_t owner){
+    std::lock_guard lock(mutex);
+    for(auto it=entries.begin();it!=entries.end();)if(it->key.owner()==owner){used-=it->pixels.size();it=entries.erase(it);}else++it;
+}
 }

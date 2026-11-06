@@ -139,7 +139,7 @@ VideoResult model(std::span<const float> proxy,int w,int h,VideoEffect effect,co
         // Interactive requests do not run the webcam networks on an entire
         // 4K/8K image. Lighting transfers a smooth gain onto full-size source
         // texture, so it benefits from a bounded model image in both modes.
-        const double scale=s.preview?std::min({1.,1920./w,1080./h}):std::min(1.,1920./std::max(w,h));
+        const double scale=s.preview?std::min({1.,1280./w,720./h}):std::min(1.,1920./std::max(w,h));
         mw=std::max(1,static_cast<int>(std::lround(w*scale)));
         mh=std::max(1,static_cast<int>(std::lround(h*scale)));
     }
@@ -184,7 +184,7 @@ PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& so
         return PF_Err_NONE;
     }
     processing::begin(FOUR_VIDEO_KIND,params[Quality]->u.pd.value==2?L"Interactive Preview":L"Highest Quality · Render");
-    RenderKey key;key.append(&in->effect_ref,sizeof(in->effect_ref));key.append(&in->current_time,sizeof(in->current_time));
+    RenderKey key(reinterpret_cast<std::uintptr_t>(in->effect_ref));key.append(&in->current_time,sizeof(in->current_time));
     key.append(&in->time_step,sizeof(in->time_step));key.append(input);
     const std::array<double,17> controlKey{double(params[Enabled]->u.bd.value),params[Amount]->u.fs_d.value,double(params[Quality]->u.pd.value),
         double(params[KeepChair]->u.bd.value),params[Edge]->u.fs_d.value,params[Feather]->u.fs_d.value,double(params[ShowMask]->u.bd.value),
@@ -353,6 +353,7 @@ extern "C" DllExport PF_Err EffectMain(PF_Cmd command,PF_InData* in,PF_OutData* 
         case PF_Cmd_SMART_PRE_RENDER: return preRender(in,static_cast<PF_PreRenderExtra*>(extra));
         case PF_Cmd_SMART_RENDER: return smartRender(in,out,static_cast<PF_SmartRenderExtra*>(extra));
         case PF_Cmd_SEQUENCE_SETDOWN:
+            if(in){const auto owner=reinterpret_cast<std::uintptr_t>(in->effect_ref);cache.clear(owner);releaseVideo(owner);}break;
         case PF_Cmd_GLOBAL_SETDOWN: cache.clear();shutdownVideo(); break;
         default: break;
         }

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.1 — 6 November 2026
+
+- Audio discovery, format setup and activation no longer load NVIDIA models or create CUDA contexts. Silent and bypassed live processing stays lightweight.
+- Live voice processing prepares models on a worker, reports preparation status and keeps latency-aligned audio passing through until processed audio is ready. Prefetch and offline rendering wait for preparation instead of exporting temporary pass-through audio.
+- Studio Voice uses its low-latency model during live/prefetch processing, including saved explicit HQ settings. The six-second HQ model is reserved for hosts requesting offline rendering.
+- Eye Contact, the six picture effects and voice processing preserve Adobe's CUDA context. Cleanup errors are contained during teardown.
+- Closing one picture-effect instance no longer clears another instance's cached output or releases its active model. Native AE audio also tracks the instance that owns its model.
+- Video defaults to Interactive Preview with bounded model images. Source-resolution corrections preserve original detail; Studio Light transfers lighting onto source texture.
+- Native processing controls expose quality, elapsed time, GPU memory, status and cancellation. Premiere voice effects include a native editor.
+- Setup downloads independent packages concurrently and shows byte-based download, verification and extraction progress, transfer speed and estimated time remaining. Interrupted downloads resume and completed packages are verified.
+
+Validation includes 108 model-free VST setup/activation cycles, concurrent video renders with alternating host CUDA contexts, all six native AE audio adapters, exact offline/prefetch audio comparison, silent-channel isolation, installed-copy checks and installer transaction/download/crypto fixtures. These checks do not establish universal Adobe/GPU compatibility or perceptual superiority over NVIDIA's models. See [validation scope](QUALITY-REPORT.md).
+
+Full-resolution 4K inference remains below real-time speed in local testing. Use Interactive Preview and lower Adobe playback resolution while editing. Live audio briefly passes through during model preparation; replay the start after preparation to audition it. No SDKs, downloaded models or credentials are included in the source repository.
+
 ## 0.2.0 — 2026-11-03
 
 - Main community release: a single Setup executable and optional checksum in the public download assets.

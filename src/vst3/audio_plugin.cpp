@@ -1,4 +1,6 @@
 #include "core/audio_pipeline.h"
+#include "core/audio_contract.h"
+#include "audio_warmup.h"
 #include "ui/processing_panel.h"
 #include "public.sdk/source/common/pluginview.h"
 #include "public.sdk/source/vst/vstaudioeffect.h"
@@ -75,7 +77,7 @@ public:
         parameters.addParameter(STR16("Bypass"),nullptr,1,0,ParameterInfo::kCanAutomate|ParameterInfo::kIsBypass,Bypass);
         if constexpr(Kind==4) {
             auto* quality=new StringListParameter(STR16("Processing"),Quality,nullptr,0);
-            quality->appendString(STR16("Auto: Preview / Offline HQ"));quality->appendString(STR16("Interactive Preview"));quality->appendString(STR16("Highest Quality: Render"));parameters.addParameter(quality);
+            quality->appendString(STR16("Auto: Preview / Offline HQ"));quality->appendString(STR16("Interactive Preview"));quality->appendString(STR16("Highest Quality: Offline Render"));parameters.addParameter(quality);
         }
         return kResultOk;
     }
@@ -121,20 +123,42 @@ public:
 };
 template<int Kind> class Processor final: public AudioEffect {
     State state;
-    std::unique_ptr<fourbyfour::AudioPipeline> pipeline;
-    int channels{2},rate{},latency{};
+    // Host setup never loads a model. Playback starts preparation on actual
+    // signal; prefetch/offline rendering waits for the worker's complete model.
+    std::unique_ptr<fourbyfour::AudioWarmup> warmup;
+    fourbyfour::AudioPipeline* observedPipeline{};
+    std::vector<std::array<float,2>> dryDelay;
+    std::array<std::vector<float>,2> sourceScratch,wetScratch;
+    int channels{2},rate{},latency{},maxBlock{},dryPosition{},appliedProfile{-999};
+    int64 warmFrames{};
+    bool resetPending{true};
     int64 nextSample{}; bool haveTime{};
     std::atomic<int> qualityChoice{0};
     fourbyfour::AudioEffect selectedEffect{static_cast<fourbyfour::AudioEffect>(Kind)};
     fourbyfour::AudioEffect requestedEffect(int mode) const {
         if constexpr(Kind==4) {
             const auto quality=qualityChoice.load();
-            return quality==2||(quality==0&&mode==kOffline)?fourbyfour::AudioEffect::studioQuality:fourbyfour::AudioEffect::studioPreview;
+            // HQ works on six-second blocks. Never execute it on a live audio
+            // callback, including saved projects that selected explicit HQ.
+            return mode==kOffline&&quality!=1?fourbyfour::AudioEffect::studioQuality:fourbyfour::AudioEffect::studioPreview;
         }
         return static_cast<fourbyfour::AudioEffect>(Kind);
     }
-    std::unique_ptr<fourbyfour::AudioPipeline> makePipeline(int sampleRate) {
-        return std::make_unique<fourbyfour::AudioPipeline>(fourbyfour::AudioSettings{selectedEffect,channels,state.profile-1,7+Kind},sampleRate);
+    void releaseModels() {
+        warmup.reset();observedPipeline=nullptr;
+    }
+    void prepare(int sampleRate,int blockSize,int mode) {
+        releaseModels();rate=sampleRate;maxBlock=blockSize;selectedEffect=requestedEffect(mode);
+        latency=fourbyfour::audioContract(selectedEffect,rate).latency;
+        dryDelay.assign(static_cast<std::size_t>(latency),{});
+        for(int c=0;c<channels;++c) {sourceScratch[c].resize(maxBlock);wetScratch[c].resize(maxBlock);}
+        warmup=std::make_unique<fourbyfour::AudioWarmup>(fourbyfour::AudioSettings{selectedEffect,channels,state.profile-1,7+Kind},rate);
+        resetPending=true;haveTime=false;
+    }
+    void resetHistory() {
+        std::fill(dryDelay.begin(),dryDelay.end(),std::array<float,2>{});dryPosition=0;
+        if(auto* current=warmup?warmup->ready():nullptr)current->reset();
+        observedPipeline=nullptr;warmFrames=0;appliedProfile=-999;resetPending=false;
     }
 public:
     Processor() { setControllerClass(controllerIds[Kind]); }
@@ -144,11 +168,11 @@ public:
         addAudioInput(STR16("Voice Input"),SpeakerArr::kStereo);
         addAudioOutput(STR16("Voice Output"),SpeakerArr::kStereo);return kResultOk;
     }
-    tresult PLUGIN_API terminate() override { pipeline.reset();return AudioEffect::terminate(); }
+    tresult PLUGIN_API terminate() override { releaseModels();return AudioEffect::terminate(); }
     tresult PLUGIN_API setBusArrangements(SpeakerArrangement* in,int32 ni,SpeakerArrangement* out,int32 no) override {
         if(ni!=1||no!=1||!in||!out||in[0]!=out[0]||(in[0]!=SpeakerArr::kMono&&in[0]!=SpeakerArr::kStereo)) return kResultFalse;
         const auto error=AudioEffect::setBusArrangements(in,ni,out,no);
-        if(error==kResultOk) { const int count=SpeakerArr::getChannelCount(in[0]);if(count!=channels) {channels=count;pipeline.reset();} }
+        if(error==kResultOk) { const int count=SpeakerArr::getChannelCount(in[0]);if(count!=channels) {releaseModels();channels=count;resetPending=true;} }
         return error;
     }
     tresult PLUGIN_API canProcessSampleSize(int32 size) override { return size==kSample32?kResultTrue:kResultFalse; }
@@ -158,11 +182,9 @@ public:
         try {
             const int nextRate=static_cast<int>(std::lround(setup.sampleRate));
             if(std::abs(nextRate-setup.sampleRate)>.001) return kResultFalse;
-            const auto nextEffect=requestedEffect(setup.processMode);
-            if(!pipeline||nextRate!=rate||selectedEffect!=nextEffect) {
-                pipeline.reset();selectedEffect=nextEffect;pipeline=makePipeline(nextRate);
-                rate=nextRate;latency=pipeline->latency();
-            }
+            // This is a metadata/configuration call, frequently used by plugin
+            // scanners. No NVIDIA DLL, CUDA context or model is opened here.
+            prepare(nextRate,setup.maxSamplesPerBlock,setup.processMode);
             return AudioEffect::setupProcessing(setup);
         } catch(const std::exception& e) { std::fprintf(stderr,"4x4Tools audio initialization: %s\n",e.what());return kResultFalse; }
     }
@@ -170,35 +192,23 @@ public:
     uint32 PLUGIN_API getTailSamples() override { return static_cast<uint32>(latency); }
     tresult PLUGIN_API setActive(TBool active) override {
         try {
-            if(!active)pipeline.reset();
-            if(active&&selectedEffect!=requestedEffect(processSetup.processMode)){pipeline.reset();selectedEffect=requestedEffect(processSetup.processMode);}
-            if(active&&!pipeline&&rate>=8000) {
-                pipeline=makePipeline(rate);
-                latency=pipeline->latency();
-            }
-            if(active&&pipeline) {pipeline->reset();pipeline->profile(state.profile-1);} haveTime=false;
+            if(!active)releaseModels();
+            else if(rate>=8000&&(selectedEffect!=requestedEffect(processSetup.processMode)||!warmup))
+                prepare(rate,maxBlock,processSetup.processMode);
+            resetPending=true;haveTime=false;
         }
         catch(...) { return kResultFalse; }
         return AudioEffect::setActive(active);
     }
     tresult PLUGIN_API setProcessing(TBool processing) override {
-        try {
-            if(!processing)pipeline.reset();
-            else {
-                if(!pipeline&&rate>=8000) {
-                    pipeline=makePipeline(rate);
-                    latency=pipeline->latency();
-                }
-                if(pipeline)pipeline->reset();
-            }
-            haveTime=false;
-        }
-        catch(...) { return kResultFalse; }
-        return AudioEffect::setProcessing(processing);
+        // VST permits this callback on the realtime thread. Defer history reset
+        // to actual processing; never load/destroy models or allocate here.
+        resetPending=true;haveTime=false;
+        return kResultOk;
     }
     tresult PLUGIN_API setState(IBStream* stream) override {
         State next;if(!next.read(stream)) return kResultFalse;
-        try {if(pipeline) pipeline->profile(next.profile-1);state=next;qualityChoice.store(next.quality);return kResultOk;} catch(...) {return kResultFalse;}
+        state=next;qualityChoice.store(next.quality);return kResultOk;
     }
     tresult PLUGIN_API getState(IBStream* stream) override {auto copy=state;copy.quality=qualityChoice.load();return copy.write(stream)?kResultOk:kResultFalse;}
     tresult PLUGIN_API notify(IMessage* message) override {
@@ -217,11 +227,12 @@ public:
         else if(event.id==Quality&&Kind==4) qualityChoice.store(static_cast<int>(std::lround(value*2)));
         else if constexpr(Kind==3) if(event.id==Profile) {
             const int profile=static_cast<int>(std::lround(value*6));
-            if(state.profile!=profile) {state.profile=profile;if(pipeline) pipeline->profile(profile-1);}
+            state.profile=profile;
         }
     }
     tresult PLUGIN_API process(ProcessData& data) override {
         try {
+            if(data.numSamples<0||data.symbolicSampleSize!=kSample32)return kResultFalse;
             std::vector<Event> events;
             if(data.inputParameterChanges) for(int32 i=0;i<data.inputParameterChanges->getParameterCount();++i) {
                 auto* queue=data.inputParameterChanges->getParameterData(i);if(!queue) continue;
@@ -232,18 +243,61 @@ public:
             }
             std::stable_sort(events.begin(),events.end(),[](const auto& a,const auto& b){return a.offset<b.offset;});
             if(!data.numSamples||!data.numInputs||!data.numOutputs) {for(const auto& e:events) apply(e);return kResultOk;}
-            if(data.numSamples<0||data.numInputs!=1||data.numOutputs!=1||data.inputs[0].numChannels!=channels||data.outputs[0].numChannels!=channels||!pipeline)
+            if(data.numSamples>maxBlock||rate<8000||data.numInputs!=1||data.numOutputs!=1||!data.inputs||!data.outputs||
+               data.inputs[0].numChannels!=channels||data.outputs[0].numChannels!=channels||dryDelay.empty()||
+               !data.inputs[0].channelBuffers32||!data.outputs[0].channelBuffers32)
                 return kResultFalse;
+            for(int c=0;c<channels;++c)if(!data.inputs[0].channelBuffers32[c]||!data.outputs[0].channelBuffers32[c])return kResultFalse;
             if(data.processContext&&(data.processContext->state&ProcessContext::kPlaying)) {
-                if(haveTime&&data.processContext->projectTimeSamples!=nextSample) pipeline->reset();
+                if(haveTime&&data.processContext->projectTimeSamples!=nextSample)resetPending=true;
                 nextSample=data.processContext->projectTimeSamples+data.numSamples;haveTime=true;
             }
+            if(resetPending)resetHistory();
             int32 position=0;
             auto render=[&](int32 count) {
                 if(count<=0) return;
                 const float* in[2]{};float* out[2]{};
-                for(int c=0;c<channels;++c) {in[c]=data.inputs[0].channelBuffers32[c]+position;out[c]=data.outputs[0].channelBuffers32[c]+position;}
-                pipeline->process(in,out,count,static_cast<float>(state.mix),static_cast<float>(state.gain*36-24),state.bypass!=0);position+=count;
+                bool signal=false;
+                for(int c=0;c<channels;++c) {
+                    in[c]=sourceScratch[c].data();out[c]=wetScratch[c].data();
+                    for(int i=0;i<count;++i) {
+                        const float value=data.inputs[0].channelBuffers32[c][position+i];
+                        sourceScratch[c][i]=std::isfinite(value)?value:0.f;signal|=sourceScratch[c][i]!=0.f;
+                    }
+                }
+                const bool wet=state.mix>0&&!state.bypass;
+                const bool realtime=data.processMode==kRealtime;
+                auto* current=warmup?warmup->ready():nullptr;
+                if(warmup&&wet) {
+                    if(!realtime)current=warmup->waitUntilReady();
+                    else if(signal)warmup->request();
+                }
+                if(current) {
+                    if(current!=observedPipeline) {
+                        if(current->latency()!=latency)throw std::runtime_error("Prepared voice latency changed unexpectedly.");
+                        observedPipeline=current;warmFrames=0;appliedProfile=-999;
+                    }
+                    if(appliedProfile!=state.profile) {current->profile(state.profile-1);appliedProfile=state.profile;}
+                    current->process(in,out,count,static_cast<float>(state.mix),static_cast<float>(state.gain*36-24),state.bypass!=0);
+                }
+                const float gain=static_cast<float>(std::pow(10.,(state.gain*36-24)/20));
+                for(int i=0;i<count;++i) {
+                    const auto dry=dryDelay[dryPosition];
+                    for(int c=0;c<channels;++c)dryDelay[dryPosition][c]=sourceScratch[c][i];
+                    if(++dryPosition==latency)dryPosition=0;
+                    // Preserve timing while loading. Fade to the prepared
+                    // model only after its own delay line contains valid audio.
+                    float ready=0;
+                    if(current) {
+                        if(warmFrames>=latency)ready=!realtime?1.f:static_cast<float>(std::min(1.,double(warmFrames-latency)/(rate*.02)));
+                        ++warmFrames;
+                    }
+                    for(int c=0;c<channels;++c) {
+                        const float fallback=dry[c]*gain;
+                        data.outputs[0].channelBuffers32[c][position+i]=ready>0?fallback+ready*(wetScratch[c][i]-fallback):fallback;
+                    }
+                }
+                position+=count;
             };
             for(const auto& e:events) {render(e.offset-position);apply(e);}
             render(data.numSamples-position);data.outputs[0].silenceFlags=0;return kResultOk;

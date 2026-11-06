@@ -15,6 +15,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
+#include <mutex>
 #include <vector>
 
 using Main=PF_Err (*)(PF_Cmd,PF_InData*,PF_OutData*,PF_ParamDef*[],PF_LayerDef*,void*);
@@ -40,6 +41,7 @@ int wmain(int argc,wchar_t** argv){
         const int quality=argc>5?std::stoi(argv[5]):1,count=argc>6?std::stoi(argv[6]):3;
         const bool contexts=argc>7&&std::stoi(argv[7]),floating=argc>8&&std::stoi(argv[8]);
         const bool repeatTime=argc>9&&std::stoi(argv[9]);
+        const bool parallel=argc>10&&std::stoi(argv[10]);
         const std::filesystem::path path=std::filesystem::absolute(argv[1])/(std::wstring(L"4x4")+argv[4]+L".aex");
         module=LoadLibraryExW(path.c_str(),nullptr,LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR|LOAD_LIBRARY_SEARCH_SYSTEM32);
         if(!module)throw std::runtime_error("Cannot load the effect");
@@ -60,16 +62,17 @@ int wmain(int argc,wchar_t** argv){
         auto destroy=reinterpret_cast<int(*)(void*)>(GetProcAddress(driver,"cuCtxDestroy_v2"));
         std::array<void*,2> host{};
         if(contexts){if(!init||!create||!set||!get||!destroy||init(0)||create(&host[0],0,0)||create(&host[1],0,0))throw std::runtime_error("Cannot create host CUDA contexts");set(nullptr);}
-        std::vector<unsigned char> result;std::exception_ptr failure;
+        std::vector<unsigned char> result;std::exception_ptr failure;std::mutex capture;
+        std::vector<std::thread> workers;
         for(int index=0;index<count;++index){
-            auto run=[&]{try{
+            auto run=[&,index]{try{
                 if(contexts)set(host[index%2]);
                 PF_InData in{};PF_OutData out{};in.appl_id='PrMr';in.pica_basicP=&basic;
                 in.width=w;in.height=h;in.current_time=repeatTime?0:index;in.time_step=1;in.time_scale=30;in.total_time=180;
                 in.effect_ref=reinterpret_cast<PF_ProgPtr>(module);in.inter.add_param=add;in.inter.abort=abortRender;
                 in.inter.checkout_param=checkout;in.inter.checkin_param=checkin;
                 controls={};if(main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr))throw std::runtime_error(out.return_msg);
-                controls[3].u.pd.value=quality;
+                if(std::wstring(argv[4])!=L"EyeContact")controls[3].u.pd.value=quality;
                 const int stride=w*(floating?16:4)+32;
                 std::vector<unsigned char> source(static_cast<std::size_t>(stride)*h),destination(source.size(),0xcd);
                 fourbyfour::Frame frame{source.data(),w,h,stride,floating?fourbyfour::PixelLayout::bgra32f:fourbyfour::PixelLayout::bgra8};
@@ -84,13 +87,18 @@ int wmain(int argc,wchar_t** argv){
                 if(error)throw std::runtime_error(out.return_msg);
                 if(contexts){void* current{};if(get(&current)||current!=host[index%2])throw std::runtime_error("Effect replaced the host CUDA context");}
                 auto next=fourbyfour::toBgr({destination.data(),w,h,stride,frame.layout});
-                if(repeatTime&&index&&next!=result)throw std::runtime_error("Cached frame pixels changed");
+                PF_InData unused=in;unused.effect_ref=reinterpret_cast<PF_ProgPtr>(std::uintptr_t(1));
+                if(main(PF_Cmd_SEQUENCE_SETDOWN,&unused,&out,nullptr,nullptr,nullptr))throw std::runtime_error("Unrelated instance teardown failed");
+                std::lock_guard guard(capture);
+                if(repeatTime&&!result.empty()&&next!=result)throw std::runtime_error("Cached frame pixels changed");
                 result=std::move(next);
                 std::cout<<"frame="<<index<<" ms="<<ms<<" fps="<<1000/ms<<" size="<<w<<'x'<<h<<" host_context="<<(contexts?index%2:-1)<<"\n"<<std::flush;
                 if(contexts)set(nullptr);
-            }catch(...){failure=std::current_exception();}};
-            std::thread thread(run);thread.join();if(failure)std::rethrow_exception(failure);
+            }catch(...){std::lock_guard guard(capture);failure=std::current_exception();}};
+            if(parallel)workers.emplace_back(run);
+            else {std::thread thread(run);thread.join();if(failure)std::rethrow_exception(failure);}
         }
+        for(auto& worker:workers)worker.join();if(failure)std::rethrow_exception(failure);
         if(contexts)set(host[0]);
         main(PF_Cmd_GLOBAL_SETDOWN,&setup,&setupOut,nullptr,nullptr,nullptr);FreeLibrary(module);module=nullptr;
         if(contexts){set(nullptr);for(auto value:host)destroy(value);}

@@ -13,7 +13,7 @@ RTX 5070 (12 GB) is the physical validation machine. Other supported, mobile and
 
 ## Installation
 
-1. Download **4x4Tools-Setup.exe** from the [official community release](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0). GitHub's Source code ZIP cannot install effects.
+1. Download **4x4Tools-Setup.exe** from the [official community release](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.1). GitHub's Source code ZIP cannot install effects.
 2. Save projects and close Premiere, After Effects and Media Encoder. Setup checks GPU support and open Adobe apps before installing.
 3. Review the preview and third-party terms. Choose video, voice, or both.
 4. Setup downloads the selected encrypted runtime/model data from GitHub, checks hashes/authentication and installs matching models. No NVIDIA sign-in occurs. Interrupted downloads can resume on retry.
@@ -31,11 +31,11 @@ Initial installation needs internet access. Interrupted downloads resume automat
 
 ## Premiere Pro
 
-Find video effects in **Effects → 4x4Tools**, apply one to a clip and adjust Effect Controls. Start with **Highest Quality**; choose **Faster Preview** when editing becomes slow. Background Remove creates transparency: place a replacement on a lower video track. Inspect Show Mask around hair and occlusions.
+Find video effects in **Effects → 4x4Tools**, apply one to a clip and adjust Effect Controls. Start with **Interactive Preview**; choose **Highest Quality (Render)** for final output. Background Remove creates transparency: place a replacement on a lower video track. Inspect Show Mask around hair and occlusions.
 
-For voice, open Premiere's **Audio Plug-In Manager** in audio preferences, scan VST3 plug-ins and enable the processors from vendor **4x4Tools**. Add them in supported audio effect slots. The six processors share **4x4Tools Audio.vst3** and use the host's generic parameter interface.
+For voice, open Premiere's **Audio Plug-In Manager** in audio preferences, scan VST3 plug-ins and enable the processors from vendor **4x4Tools**. Add them in supported audio effect slots. The six processors share **4x4Tools Audio.vst3** and provide a native editor with processing status, Mix, Gain and Bypass.
 
-Start with Voice Clean for combined noise/room cleanup. Studio Voice HQ uses six-second model blocks and is intended for rendered work. Premiere receives the reported processing latency. Studio Voice can alter timing/phase, so begin at Mix 100% and compare using whole-effect bypass.
+Start with Voice Clean for combined noise/room cleanup. Models load in the background when live audio first plays; the editor shows the current loading phase. Audio passes through with host delay compensation until the model is ready, then blends into processed audio. Replay the beginning to audition it after preparation. Studio Voice HQ uses the low-latency model during live/prefetch processing, including older saved HQ choices. Its six-second HQ model is used when the host explicitly requests offline rendering; hosts that never request offline mode use the preview model. Native AE HQ remains an explicit render choice. Premiere receives the reported processing latency. Studio Voice can alter timing/phase, so begin at Mix 100% and compare using whole-effect bypass.
 
 ## After Effects
 
@@ -54,7 +54,7 @@ Native AE audio uses fixed windows with pre-roll. Mix, gain and microphone-chara
 | Less aggressive video cleanup | Video Denoise → Preserve Fine Detail |
 | Stronger cleanup | Video Denoise → Heavy Noise |
 | Lighting direction | Studio Light → azimuth/elevation, then exposure/warmth |
-| Faster editing | Faster Preview; review Highest Quality before final render |
+| Faster editing | Interactive Preview; review Highest Quality before final render |
 | Telephone-like speech | Voice Restore; predicted detail cannot recover an exact original |
 
 Detail Restore does not resize an Adobe sequence/composition. Auto Frame targets a single person; inspect cuts, entrances and occlusions. Speech processors may damage non-speech material.
@@ -83,6 +83,6 @@ Remove **4x4Tools Broadcast Suite** through Windows Installed Apps. The uninstal
 | Premiere voice effects missing | Scan/enable VST3 in Audio Plug-In Manager |
 | AE audio missing in a newly installed AE version | Close Adobe and rerun Setup with the same components |
 | Eye Contact unavailable at AE 32 bpc | Use a supported 8/16-bpc workflow |
-| Slow/out-of-memory rendering | Try one effect at a time, fewer stacked effects, Faster Preview |
+| Slow/out-of-memory rendering | Use Interactive Preview, lower Adobe playback resolution and fewer stacked effects; full 4K inference is not guaranteed in real time |
 
 Report persistent problems using the [issue forms](https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/issues/new/choose). Include exact steps and Adobe/GPU/driver versions. Never attach `.env`, tokens, SDK archives or private footage.

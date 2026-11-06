@@ -1,5 +1,6 @@
 #include "eye_contact.h"
 #include "gpu.h"
+#include "cuda_context.h"
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -111,16 +112,8 @@ struct Api {
             (errorText ? errorText(status) : "NVIDIA SDK error") + " (" + std::to_string(int(status)) + ")");
     }
 };
-struct DeviceGuard {
-    Api& api; int previous{-1};
-    DeviceGuard(Api& a, int selected) : api(a) {
-        if (api.getDevice(&previous)) previous = -1;
-        if (api.setDevice(selected)) throw std::runtime_error("Cannot activate the selected NVIDIA GPU.");
-    }
-    ~DeviceGuard() { if (previous >= 0) api.setDevice(previous); }
-};
 struct Engine {
-    fs::path root; fourbyfour::Gpu gpu; Api api;
+    fs::path root; fourbyfour::Gpu gpu; fourbyfour::CudaContext context; Api api;
     NvAR_FeatureHandle feature{}; CUstream stream{};
     std::unique_ptr<NvCVImage> input, output, temporary;
     int width{}, height{}, eyeSize{};
@@ -128,11 +121,11 @@ struct Engine {
     std::vector<float> confidence;
     float gaze[2]{}, translation[3]{};
     NvAR_Quaternion pose{}; NvAR_Point3f direction[2]{}; NvAR_Rect box{}; NvAR_BBoxes boxes{};
-    explicit Engine(fs::path sdk) : root(std::move(sdk)), gpu(fourbyfour::selectGpu()), api(root) {}
+    explicit Engine(fs::path sdk) : root(std::move(sdk)), gpu(fourbyfour::selectGpu()), context(gpu.ordinal), api(root) {}
     void release() {
-        DeviceGuard guard(api, gpu.ordinal);
+        fourbyfour::CudaContext::Guard guard(context);
         if (stream) api.streamSync(stream);
-        if (feature) { api.destroy(feature); feature = nullptr; }
+        if (feature) {const auto old=feature;feature=nullptr;try{api.destroy(old);}catch(...){}}
         temporary.reset(); output.reset(); input.reset();
         if (stream) { api.streamDestroy(stream); stream = nullptr; }
         width = height = eyeSize = 0;
@@ -141,7 +134,7 @@ struct Engine {
     void configure(int w, int h, int size) {
         if (feature && width == w && height == h && eyeSize == size) return;
         release();
-        DeviceGuard guard(api, gpu.ordinal);
+        fourbyfour::CudaContext::Guard guard(context);
         api.check(api.streamCreate(&stream), "Create CUDA stream");
         api.check(api.create(NvAR_Feature_GazeRedirection, &feature), "Create Eye Contact");
         const auto models = utf8(root / "bin/models");
@@ -174,7 +167,7 @@ struct Engine {
         width = w; height = h; eyeSize = size;
     }
     std::vector<std::uint8_t> process(std::span<const std::uint8_t> bgr) {
-        DeviceGuard guard(api, gpu.ordinal);
+        fourbyfour::CudaContext::Guard guard(context);
         std::vector<std::uint8_t> result(bgr.begin(), bgr.end());
         NvCVImage hostIn, hostOut;
         api.check(api.init(&hostIn, width, height, width * 3, const_cast<std::uint8_t*>(bgr.data()), NVCV_BGR, NVCV_U8, NVCV_CHUNKY, NVCV_CPU), "Describe source image");
@@ -197,7 +190,7 @@ extern "C" NvCV_Status NvCV_API NvCVImage_Alloc(NvCVImage* image, unsigned w, un
     std::memset(image, 0, sizeof(*image)); return NVCV_ERR_LIBRARY;
 }
 extern "C" void NvCV_API NvCVImage_Dealloc(NvCVImage* image) {
-    if (auto function = imageDeallocate.load()) function(image);
+    if (auto function = imageDeallocate.load())try{function(image);}catch(...){}
 }
 extern "C" void NvCV_API NvCVImage_InitView(NvCVImage* sub, NvCVImage* full, int x, int y, unsigned w, unsigned h) {
     auto module = imageLibrary.load();

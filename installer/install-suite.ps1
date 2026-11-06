@@ -271,7 +271,10 @@ foreach ($payload in $payloads) {
     }
     if(!(Test-Path -LiteralPath $archive)) {
         if(!$remote){throw "Required files could not be verified ($label)."}
-        $pending.Add(@{url=($data.releaseBase+'/'+$payload.asset);target=$archive;bytes=[long]$payload.bytes;sha256=$payload.sha256;label=$label})
+        $base=$data.releaseBase
+        if($null -ne $payload.PSObject.Properties['releaseBase']){$base=$payload.releaseBase}
+        if($base -notmatch '^https://github\.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v[0-9A-Za-z.\-]+$'){throw 'Unexpected package download location.'}
+        $pending.Add(@{url=($base+'/'+$payload.asset);target=$archive;bytes=[long]$payload.bytes;sha256=$payload.sha256;label=$label})
     }
     $cacheDone+=[long]$payload.bytes;$archives[$payload.id]=$archive
 }

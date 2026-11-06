@@ -1,7 +1,7 @@
 <p align="center"><img src="docs/assets/hero.svg?v=2" alt="4x4-Tools Broadcast Suite — Your edit. Better presence. NVIDIA-accelerated picture and voice for Premiere Pro and After Effects." width="100%"></p>
 
 <p align="center">
-  <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.0"><img alt="Download for Windows" src="https://img.shields.io/badge/Download-0.2.0-b8f558?style=for-the-badge&labelColor=151e29"></a>
+  <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/tag/v0.2.1"><img alt="Download for Windows" src="https://img.shields.io/badge/Download-0.2.1-b8f558?style=for-the-badge&labelColor=151e29"></a>
   <a href="LICENSE"><img alt="Source license MIT" src="https://img.shields.io/badge/Source-MIT-e5eaf2?style=for-the-badge&labelColor=151e29"></a>
   <img alt="Windows x64 and NVIDIA RTX" src="https://img.shields.io/badge/Windows_x64-NVIDIA_RTX-76b900?style=for-the-badge&labelColor=151e29">
   <a href="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/actions/workflows/checks.yml"><img alt="Source and core checks" src="https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/actions/workflows/checks.yml/badge.svg"></a>
@@ -15,7 +15,7 @@
 
 If you have seen NVIDIA Broadcast clean up a webcam and microphone, this project brings related SDK capabilities to **recorded clips, layers and audio inside your editor**. Apply an effect, adjust its controls and render with your project. The NVIDIA Broadcast app does not need to be installed.
 
-> **Initial community release — 0.2.0.** Eye Contact has been user-tested in After Effects. The expanded suite has local integration checks; wider Adobe timeline, export and GPU-family testing is still needed. Read the [validation scope](QUALITY-REPORT.md) before production use.
+> **0.2.1 stability update.** Lightweight audio discovery, background model preparation, safer GPU contexts, instance-aware teardown and processing controls. Wider Adobe export and GPU-family testing remains open; see the [validation scope](QUALITY-REPORT.md).
 
 ## Start here
 
@@ -60,7 +60,7 @@ All six voice processors are native AE effects and are also in the **4x4Tools Au
 
 ## Made for the timeline
 
-- **Quality first.** Highest Quality is the default. Temporal effects request nearby frames explicitly, keeping unrelated clips out of their history. Faster Preview is available for editing.
+- **Editing and rendering controls.** Video defaults to Interactive Preview. Choose Highest Quality for final output. Studio Voice uses its low-latency model during live editing and HQ when the host requests offline rendering.
 - **Respect the source.** Soft masks combine with source alpha. Unchanged pixels retain their precision; denoising uses overlapping tiles for larger frames.
 - **Follow the audio host.** Independent channel processing, band-limited resampling, reported latency and padded final blocks support different buffer sizes.
 - **One 4x4Tools home.** Shared runtime storage, component selection, GPU checks, verified payloads and a branded installer/uninstaller.

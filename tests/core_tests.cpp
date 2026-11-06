@@ -43,6 +43,9 @@ int main() {
         argb[3]^=1;RenderKey changedKey;changedKey.append(a);
         require(!cache.restore(changedKey,b),"Changed input incorrectly reused an old render");
         cache.clear();require(!cache.restore(firstKey,b),"Clearing render cache retained media");
+        RenderKey ownerOne(1),ownerTwo(2);ownerOne.append(a);ownerTwo.append(a);
+        cache.store(ownerOne,b);cache.store(ownerTwo,b);cache.clear(1);
+        require(!cache.restore(ownerOne,b)&&cache.restore(ownerTwo,b),"Closing one effect discarded another instance's cached frame");
         require(!supportedArchitecture({0, 7, 5, 12080, 4ULL << 30, "NVIDIA GeForce GTX 1650"}), "GTX without Tensor Cores accepted");
         require(!supportedArchitecture({0, 12, 0, 12070, 12ULL << 30, "NVIDIA GeForce RTX 5070"}), "Old driver accepted");
         require(supportedArchitecture({0, 12, 0, 12080, 12ULL << 30, "NVIDIA GeForce RTX 5070"}), "Blackwell rejected");

@@ -1,4 +1,5 @@
 #include "audio_pipeline.h"
+#include "audio_contract.h"
 #include <algorithm>
 #include <cmath>
 #include <climits>
@@ -12,14 +13,11 @@ AudioPipeline::AudioPipeline(const AudioSettings& settings,int sampleRate,const 
     if(sampleRate<8000||sampleRate>192000) throw std::invalid_argument("Supported host sample rates are 8 to 192 kHz.");
     const double duration=double(engine.inputFrames())/engine.inputRate();
     if(std::abs(duration-double(engine.outputFrames())/engine.outputRate())>1.e-7) throw std::runtime_error("Audio model changes duration unexpectedly.");
-    // R22/3.0.0 model timing calibration. The SDK does not expose algorithmic
-    // delay: two speech recordings measured 3360 samples for cleanup/LL and
-    // 2880 for super-resolution at 48 kHz. Studio HQ resynthesizes waveform
-    // timing; use its nominal 140 ms alignment (see QUALITY-REPORT.md).
-    const int model48=settings.effect==AudioEffect::restore?2880:settings.effect==AudioEffect::studioQuality?6720:3360;
-    modelDelay=static_cast<int>(std::lround(double(model48)*rate/48000));
-    delay=modelDelay+static_cast<int>(std::ceil(duration*rate))+inputConverter.lookahead()+
-        static_cast<int>(std::ceil(double(outputConverter.lookahead())*rate/engine.outputRate()))+2;
+    const auto contract=audioContract(settings.effect,sampleRate);
+    if(engine.inputRate()!=contract.inputRate||engine.outputRate()!=contract.outputRate||
+       engine.inputFrames()!=contract.inputFrames||engine.outputFrames()!=contract.outputFrames)
+        throw std::runtime_error("Voice model timing differs from the host's advertised contract.");
+    modelDelay=contract.modelDelay;delay=contract.latency;
     for(int c=0;c<channelCount;++c) { inputs[c]=input[c].data();outputs[c]=output[c].data(); }
     reset();
 }

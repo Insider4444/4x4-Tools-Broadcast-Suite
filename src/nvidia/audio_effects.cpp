@@ -71,7 +71,9 @@ struct AudioEngine::Impl {
     int statusId()const{return settings.statusEffect>=0?settings.statusEffect:processing::AudioBase+static_cast<int>(settings.effect);}
     Impl(const AudioSettings& s,const fs::path& sdk):root(sdk.empty()?audioRuntimeRoot():fs::absolute(sdk)),gpu(selectGpu()),context(gpu.ordinal),api(acquire(root)),settings(s) {
         CudaContext::Guard guard(context);
-        processing::begin(statusId(),s.effect==AudioEffect::studioQuality?L"Highest Quality · six-second audio blocks":L"Interactive speech processing");
+        processing::Status pending;
+        if(!processing::read(statusId(),pending)||!pending.active)
+            processing::begin(statusId(),s.effect==AudioEffect::studioQuality?L"Highest Quality · six-second audio blocks":L"Interactive speech processing");
         processing::report(statusId(),L"Loading NVIDIA voice models…");
         if(s.channels<1||s.channels>2||static_cast<unsigned>(s.effect)>=descriptions.size()||s.micProfile < -1||s.micProfile>5)
             throw std::invalid_argument("Audio effects support mono/stereo and microphone profiles -1 through 5.");
@@ -82,6 +84,7 @@ struct AudioEngine::Impl {
         if(!fs::is_regular_file(model)) throw std::runtime_error("Missing audio model: "+utf8(model));
         try {
             for(int c=0;c<s.channels;++c) {
+                if(processing::cancelled(statusId()))throw std::runtime_error("Voice model preparation cancelled.");
                 NvAFX_Handle handle{}; api->check(api->create(desc.selector,&handle),"Create voice effect");
                 handles.push_back(handle);
                 api->check(api->setU32(handle,NVAFX_PARAM_USER_CUDA_CONTEXT,1),"Share the managed Adobe processing context");
@@ -105,6 +108,7 @@ struct AudioEngine::Impl {
                 if(std::find(supported.begin(),supported.end(),gpu.ordinal)==supported.end()) throw std::runtime_error("This GPU is not supported by the voice model.");
                 processing::report(statusId(),s.channels==2?(c?L"Loading right-channel model…":L"Loading left-channel model…"):L"Loading mono voice model…",c,s.channels);
                 api->check(api->load(handle),"Load voice model");
+                if(processing::cancelled(statusId()))throw std::runtime_error("Voice model preparation cancelled after the current model step.");
                 unsigned inCh{},outCh{},ir{},orr{},inf{},outf{};
                 api->check(api->getU32(handle,NVAFX_PARAM_NUM_INPUT_CHANNELS,&inCh),"Query voice channels");
                 api->check(api->getU32(handle,NVAFX_PARAM_NUM_OUTPUT_CHANNELS,&outCh),"Query voice channels");

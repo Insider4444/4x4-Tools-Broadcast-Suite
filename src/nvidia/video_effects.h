@@ -29,5 +29,6 @@ VideoResult processVideo(VideoEffect effect, std::span<const float> bgr, int wid
 VideoResult processVideoWindow(VideoEffect effect,std::span<const std::vector<float>> frames,int width,int height,
                                const VideoSettings& settings = {},const std::filesystem::path& sdk = {});
 void shutdownVideo();
+void releaseVideo(std::uintptr_t owner);
 std::filesystem::path videoRuntimeRoot();
 }

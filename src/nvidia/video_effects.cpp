@@ -292,6 +292,10 @@ VideoResult processVideo(VideoEffect effect, std::span<const float> bgr, int w, 
     } catch (...) { engine.reset(); throw; }
 }
 void shutdownVideo() { std::lock_guard lock(mutex); engine.reset(); }
+void releaseVideo(std::uintptr_t owner) {
+    std::lock_guard lock(mutex);
+    if(engine&&engine->previous.contextId==owner)engine.reset();
+}
 VideoResult processVideoWindow(VideoEffect effect,std::span<const std::vector<float>> frames,int w,int h,const VideoSettings& settings,const fs::path& sdk) {
     if(frames.empty()||frames.size()>5||w<1||h<1||w>16384||h>16384||!std::isfinite(settings.strength)||settings.strength<0||settings.strength>1)
         throw std::invalid_argument("Invalid video context window.");

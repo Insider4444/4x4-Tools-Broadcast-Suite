@@ -26,7 +26,7 @@ int wmain(int argc,wchar_t** argv) {
                 require(FindResourceW(module,MAKEINTRESOURCEW(16000),L"PiPL")!=nullptr,"Missing PiPL");
                 PF_InData in{};PF_OutData out{};in.inter.add_param=add;in.inter.abort=abortRender;
                 controls={};require(!main(PF_Cmd_GLOBAL_SETUP,&in,&out,nullptr,nullptr,nullptr),"Global setup failed");
-                require(out.my_version==PF_VERSION(0,2,1,PF_Stage_DEVELOP,1),"Wrong effect version");
+                require(out.my_version==PF_VERSION(0,2,1,PF_Stage_DEVELOP,2),"Wrong effect version");
                 require(audio?bool(out.out_flags&PF_OutFlag_AUDIO_EFFECT_ONLY):bool(out.out_flags2&PF_OutFlag2_SUPPORTS_SMART_RENDER),"Incorrect Adobe capability flags");
                 require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr)&&out.num_params==(audio?7:19),"Wrong parameter contract");
                 std::array<PF_ParamDef*,19> params{};for(int i=0;i<19;++i) params[i]=&controls[i];

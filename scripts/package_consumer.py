@@ -14,8 +14,8 @@ from package_release import encrypt, paths
 import package_suite as suite
 
 ROOT=suite.ROOT
-VERSION='0.2.0'
-OUT=ROOT/'dist/community-0.2.0'
+VERSION='0.2.1'
+OUT=ROOT/f'dist/community-{VERSION}'
 PUBLIC=OUT/'public'
 SUPPORT=OUT/'support'
 
@@ -59,13 +59,14 @@ def main():
         if prior.get('content')==fingerprint and prior.get('sha256')!=sha:raise RuntimeError('Cached support payload was modified.')
         cache.write_text(json.dumps(dict(content=fingerprint,sha256=sha)),encoding='utf-8')
         for f in selected:f['payload']=identity
-        payloads.append(dict(id=identity,file='Data/'+target.name,asset=target.name,sha256=suite.digest(target),bytes=target.stat().st_size,encryption='aes256-cbc-hmac256'))
+        payloads.append(dict(id=identity,file='Data/'+target.name,asset=target.name,sha256=suite.digest(target),bytes=target.stat().st_size,encryption='aes256-cbc-hmac256',
+                             releaseBase=f'https://github.com/Insider4444/4x4-Tools-Broadcast-Suite/releases/download/v{VERSION}-runtime'))
     files=sorted(catalog['files']+suite.FILES,key=lambda f:f['path'])
     if len({f['path'].casefold() for f in files})!=len(files):raise RuntimeError('Duplicate consumer package destination')
     manifest=dict(schema=1,product=catalog['product'],version=VERSION,distribution='end-user-encrypted',releaseBase=catalog['releaseBase'],
                   architectures=catalog['architectures'],payloads=catalog['payloads']+payloads,files=files)
     (ROOT/'build/consumer-manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
-    (SUPPORT/'manifest-0.2.0.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
+    (SUPPORT/f'manifest-{VERSION}.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
     # Full supplied license agreements stay in the installer and installed runtime.
     import pymupdf
     texts=[];seen=set()

@@ -18,7 +18,7 @@
 
 using namespace fourbyfour;
 enum Parameter { Input, Enabled, Strength, EyeSize, Compare, ParameterCount };
-static_assert(FOUR_VERSION == PF_VERSION(0, 1, 0, PF_Stage_DEVELOP, 1));
+static_assert(FOUR_VERSION == PF_VERSION(0, 2, 1, PF_Stage_DEVELOP, 2));
 static_assert(FOUR_FLAGS == PF_OutFlag_DEEP_COLOR_AWARE);
 static_assert(FOUR_FLAGS2 == PF_OutFlag2_SUPPORTS_THREADED_RENDERING);
 static bool premiere(const PF_InData* in) { return in && in->appl_id == 'PrMr'; }
