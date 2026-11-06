@@ -16,7 +16,7 @@ template<class T> void write(std::ostream& stream,T value) { stream.write(reinte
 int wmain(int argc,wchar_t** argv) {
     using namespace fourbyfour;
     try {
-        if(argc<5) { std::cerr<<"AudioEffectsCli SDK_ROOT noise|echo|clean|preview|studio|restore input.wav output.wav [mix] [mic_profile_-1_to_5]\n";return 2; }
+        if(argc<5) { std::cerr<<"AudioEffectsCli SDK_ROOT noise|echo|clean|preview|studio|restore input.wav output.wav [mix] [mic_profile_-1_to_5] [channels 0=independent|1=dialogue] [match-level 0|1]\n";return 2; }
         const std::map<std::wstring,AudioEffect> kinds{{L"noise",AudioEffect::noise},{L"echo",AudioEffect::echo},{L"clean",AudioEffect::clean},
             {L"preview",AudioEffect::studioPreview},{L"studio",AudioEffect::studioQuality},{L"restore",AudioEffect::restore}};
         AudioSettings settings;settings.effect=kinds.at(argv[2]);
@@ -42,6 +42,9 @@ int wmain(int argc,wchar_t** argv) {
             throw std::runtime_error("Use mono/stereo PCM16/PCM24 or float32 WAV, 8-192 kHz.");
         settings.channels=channels;
         if(argc>6) settings.micProfile=std::stoi(argv[6]);
+        if(argc>7){const int mode=std::stoi(argv[7]);if(mode<0||mode>1)throw std::invalid_argument("Invalid channel mode.");settings.channelMode=static_cast<AudioChannelMode>(mode);}
+        if(argc>8)settings.matchLevel=std::stoi(argv[8])!=0;
+        if(argc>9)settings.intensity=std::stof(argv[9]);
         std::vector<float> audio(raw.size()/(bits/8));
         for(std::size_t i=0;i<audio.size();++i) {
             if(format==3) std::memcpy(&audio[i],raw.data()+i*4,4);

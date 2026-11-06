@@ -1,4 +1,5 @@
 #include "image_ops.h"
+#include "lighting_color.h"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -75,16 +76,41 @@ std::vector<float> resampleProxy(std::span<const float> data,int w,int h,int cha
     }
     return result;
 }
-std::vector<float> lightingGain(std::span<const float> source,std::span<const float> relit,int w,int h) {
-    if(w<1||h<1||source.size()!=static_cast<std::size_t>(w)*h*3||relit.size()!=source.size())
+std::vector<float> lightingGain(std::span<const float> source,std::span<const float> relit,int w,int h,std::span<const float> matte) {
+    if(w<1||h<1||source.size()!=static_cast<std::size_t>(w)*h*3||relit.size()!=source.size()||(!matte.empty()&&matte.size()!=static_cast<std::size_t>(w)*h))
         throw std::invalid_argument("Invalid lighting images.");
-    // The model has a low-resolution reconstructed subject. Estimate only its
-    // broad lighting field; original eyelashes, fabric and skin texture survive.
+    // NVIDIA's reconstructed foreground may change chroma, and its background
+    // pixels are explicitly undefined. Estimate only matte-weighted luminance;
+    // never transfer reconstructed colour or downsample invalid background.
     const int gw=std::max(1,(w+15)/16),gh=std::max(1,(h+15)/16);
-    const auto a=resampleProxy(source,w,h,3,gw,gh),b=resampleProxy(relit,w,h,3,gw,gh);
-    std::vector<float> gain(a.size());
-    for(std::size_t i=0;i<gain.size();++i) gain[i]=std::clamp((b[i]+.04f)/(a[i]+.04f),.25f,4.f);
-    return resampleProxy(gain,gw,gh,3,w,h);
+    const auto sourceLuma=lightingLuminance(source),relitLuma=lightingLuminance(relit);
+    struct Cell {double source{},relit{},weight{};};std::vector<Cell> cells(static_cast<std::size_t>(gw)*gh);
+    for(int y=0;y<h;++y)for(int x=0;x<w;++x) {
+        const auto i=static_cast<std::size_t>(y)*w+x;
+        const float m=matte.empty()?1.f:std::clamp(matte[i],0.f,1.f);
+        if(!(m>0))continue;
+        // Ratios must be measured in linear light before being applied to the
+        // original scene-linear source. Encoded RGB ratios are not exposure.
+        const float a=sourceLuma[i],b=relitLuma[i];
+        if(!std::isfinite(a)||!std::isfinite(b))continue;
+        auto& cell=cells[static_cast<std::size_t>(y/16)*gw+x/16];
+        cell.source+=m*std::max(0.f,a);cell.relit+=m*std::max(0.f,b);cell.weight+=m;
+    }
+    std::vector<float> field(cells.size(),1.f);
+    for(int y=0;y<gh;++y)for(int x=0;x<gw;++x) {
+        double value=0,total=0;
+        for(int dy=-1;dy<=1;++dy)for(int dx=-1;dx<=1;++dx) {
+            const int nx=x+dx,ny=y+dy;if(nx<0||nx>=gw||ny<0||ny>=gh)continue;
+            const auto& cell=cells[static_cast<std::size_t>(ny)*gw+nx];if(cell.weight<=0)continue;
+            const double weight=cell.weight*(dx?1:2)*(dy?1:2);
+            const double ratio=std::clamp((cell.relit+.004*cell.weight)/(cell.source+.004*cell.weight),.5,2.);
+            value+=weight*std::log2(ratio);total+=weight;
+        }
+        if(total>0)field[static_cast<std::size_t>(y)*gw+x]=static_cast<float>(std::exp2(value/total));
+    }
+    const auto smooth=resampleProxy(field,gw,gh,1,w,h);std::vector<float> result(source.size());
+    for(std::size_t i=0;i<smooth.size();++i)result[i*3]=result[i*3+1]=result[i*3+2]=smooth[i];
+    return result;
 }
 std::vector<float> resample(std::span<const float> data,int w,int h,int channels,int ow,int oh,float left,float top,float cw,float ch) {
     if(w<1||h<1||ow<1||oh<1||w>16384||h>16384||ow>16384||oh>16384||channels<1||channels>4||data.size()!=static_cast<std::size_t>(w)*h*channels)

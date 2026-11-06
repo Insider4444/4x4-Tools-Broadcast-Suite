@@ -206,16 +206,13 @@ struct Engine {
         constexpr float pi = 3.141592654f;
         const float az = s.lightAzimuth * pi / 180.f, el = s.lightElevation * pi / 180.f;
         const float lx = std::cos(el) * std::sin(az), ly = std::sin(el), lz = std::cos(el) * std::cos(az);
-        const float exposure = std::exp2(s.lightExposure), warmth = s.lightWarmth / 100.f;
         for (int y = 0; y < 256; ++y) for (int x = 0; x < 512; ++x) {
             const float phi = (float(x) + .5f) * 2 * pi / 512 - pi, theta = (float(y) + .5f) * pi / 256;
             const float dot = std::sin(theta) * std::sin(phi) * lx + std::cos(theta) * ly + std::sin(theta) * std::cos(phi) * lz;
             const float key = std::exp((dot - 1.f) / .045f) * 12.f;
             const float fill = .3f + .12f * std::max(0.f, std::cos(theta));
             const auto p = (static_cast<std::size_t>(y) * 512 + x) * 3;
-            hdr[p] = exposure * (fill + key * (1.f + .35f * warmth));
-            hdr[p + 1] = exposure * (fill + key);
-            hdr[p + 2] = exposure * (fill + key * (1.f - .35f * warmth));
+            hdr[p] = hdr[p + 1] = hdr[p + 2] = fill + key;
         }
     }
     fourbyfour::VideoResult process(std::span<const float> bgr, const fourbyfour::VideoSettings& s,bool reset = true) {

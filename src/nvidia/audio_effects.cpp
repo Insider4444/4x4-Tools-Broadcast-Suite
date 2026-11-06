@@ -75,7 +75,7 @@ struct AudioEngine::Impl {
         if(!processing::read(statusId(),pending)||!pending.active)
             processing::begin(statusId(),s.effect==AudioEffect::studioQuality?L"Highest Quality · six-second audio blocks":L"Interactive speech processing");
         processing::report(statusId(),L"Loading NVIDIA voice models…");
-        if(s.channels<1||s.channels>2||static_cast<unsigned>(s.effect)>=descriptions.size()||s.micProfile < -1||s.micProfile>5)
+        if(s.channels<1||s.channels>2||static_cast<unsigned>(s.effect)>=descriptions.size()||s.micProfile < -1||s.micProfile>5||!std::isfinite(s.intensity)||s.intensity<0||s.intensity>1)
             throw std::invalid_argument("Audio effects support mono/stereo and microphone profiles -1 through 5.");
         receivedSignal.assign(s.channels,false);
         const auto& desc=descriptions[static_cast<unsigned>(s.effect)];
@@ -92,10 +92,8 @@ struct AudioEngine::Impl {
                 api->check(api->setU32(handle,NVAFX_PARAM_INPUT_SAMPLE_RATE,desc.inputRate),"Set voice input rate");
                 api->check(api->setU32(handle,NVAFX_PARAM_OUTPUT_SAMPLE_RATE,48000),"Set voice output rate");
                 if(s.effect==AudioEffect::noise) api->check(api->setU32(handle,NVAFX_PARAM_EFFECT_VERSION,2),"Enable denoiser v2");
-                // Model intensity stays at full quality. The adapter provides
-                // latency-aligned dry/wet mixing without changing SDK state.
-                const auto intensity=api->setFloat(handle,NVAFX_PARAM_INTENSITY_RATIO,1.f);
-                if(intensity!=NVAFX_STATUS_SUCCESS&&intensity!=NVAFX_STATUS_INVALID_PARAM) api->check(intensity,"Set voice intensity");
+                const auto intensity=api->setFloat(handle,NVAFX_PARAM_INTENSITY_RATIO,s.intensity);
+                if(intensity!=NVAFX_STATUS_SUCCESS&&(intensity!=NVAFX_STATUS_INVALID_PARAM||s.intensity!=1.f))api->check(intensity,"Set voice intensity");
                 if(s.effect==AudioEffect::studioPreview) {
                     const auto profiles=root/"features"/desc.feature/"models"/architecture/"studio_voice_mic_profiles_48k.trtpkg";
                     api->check(api->setString(handle,"mic_profile_model",utf8(profiles).c_str()),"Set microphone profiles");
@@ -146,11 +144,19 @@ void AudioEngine::profile(int id) {
     if(id < -1||id>5) throw std::invalid_argument("Invalid microphone profile.");
     std::lock_guard lock(impl->mutex);CudaContext::Guard guard(impl->context); impl->profile(id);
 }
+void AudioEngine::intensity(float value) {
+    if(!std::isfinite(value)||value<0||value>1)throw std::invalid_argument("Invalid voice suppression strength.");
+    if(value==impl->settings.intensity)return;
+    std::lock_guard lock(impl->mutex);CudaContext::Guard guard(impl->context);
+    for(auto handle:impl->handles)impl->api->check(impl->api->setFloat(handle,NVAFX_PARAM_INTENSITY_RATIO,value),"Set voice suppression strength");
+    impl->settings.intensity=value;
+}
 void AudioEngine::run(std::span<const float* const> input,std::span<float* const> output) {
     if(input.size()!=impl->handles.size()||output.size()!=impl->handles.size()) throw std::invalid_argument("Invalid audio channel count.");
     std::lock_guard lock(impl->mutex);
     CudaContext::Guard guard(impl->context);
     processing::begin(impl->statusId(),impl->settings.effect==AudioEffect::studioQuality?L"Highest Quality · six-second audio blocks":L"Interactive speech processing");
+    bool processed=false;
     for(std::size_t c=0;c<input.size();++c) {
         if(!input[c]||!output[c]) throw std::invalid_argument("Missing audio buffer.");
         const float* source=input[c]; float* destination=output[c];
@@ -158,6 +164,7 @@ void AudioEngine::run(std::span<const float* const> input,std::span<float* const
         if(!impl->receivedSignal[c]){std::fill_n(destination,impl->outFrames,0.f);continue;}
         processing::report(impl->statusId(),impl->settings.effect==AudioEffect::studioQuality?L"Processing six-second HQ block…":L"Processing speech block…",static_cast<int>(c),static_cast<int>(input.size()));
         impl->api->check(impl->api->run(impl->handles[c],&source,&destination,impl->inFrames,1),"Process voice block");
+        processed=true;
         if(processing::cancelled(impl->statusId())){processing::finish(impl->statusId(),L"Cancelled");throw std::runtime_error("Voice processing cancelled after the current model step.");}
         // Neural models can emit a tiny noise floor for all-zero input. Keep a
         // channel with no signal history exactly silent, without gating breaths
@@ -165,6 +172,6 @@ void AudioEngine::run(std::span<const float* const> input,std::span<float* const
         if(!impl->receivedSignal[c]) std::fill_n(destination,impl->outFrames,0.f);
         for(unsigned i=0;i<impl->outFrames;++i) if(!std::isfinite(destination[i])) throw std::runtime_error("Voice model produced a non-finite sample.");
     }
-    processing::finish(impl->statusId(),L"Audio block ready");
+    processing::finish(impl->statusId(),processed?L"Processed audio · NVIDIA effect applied":L"Silent input · no model run");
 }
 }

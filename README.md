@@ -78,7 +78,7 @@ These are integration choices around NVIDIA's models. They do not establish bett
 | Integration | Native Adobe video, native AE audio, VST3 audio for Premiere |
 | Six new video effects | AE 8/16/32 bpc SmartFX; Premiere BGRA 8-bit and float32 |
 | Eye Contact | AE 8/16 bpc; Premiere 8-bit/float32. **AE 32-bpc Eye Contact is not implemented.** |
-| Color | SDR models; HDR/log projects are not an accepted preview workflow |
+| Color | SDR models; Studio Light also has an explicit Apple Log 1 / Rec.2020 input path; other Log/HDR spaces are not covered |
 | Voice | Mono/stereo; Studio Voice HQ is intended for offline rendering |
 
 GTX, AMD/Intel GPUs, Windows on Arm and macOS are unsupported. Compute capability alone does not prove every GPU configuration works. Technical detection is separate from NVIDIA licensing; see [requirements](docs/USER-GUIDE.md#requirements).

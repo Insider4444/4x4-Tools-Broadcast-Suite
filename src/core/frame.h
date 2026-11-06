@@ -22,7 +22,8 @@ void applyBgrDelta(const Frame& input, const Frame& output,
                    std::span<const std::uint8_t> corrected, float strength,
                    bool compare = false);
 // Straight-alpha, normalized SDR proxy, retaining 16/32-bit source precision.
-std::vector<float> toBgrFloat(const Frame& frame);
+// Set sdr=false for colour-aware operations that retain extended-range values.
+std::vector<float> toBgrFloat(const Frame& frame, bool sdr = true);
 // Quantize the finite [0,1] model proxy without scalar CRT round calls.
 void quantizeSdrProxy(std::span<float> values);
 void applyFloatDelta(const Frame& input, const Frame& output,

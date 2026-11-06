@@ -35,7 +35,9 @@ The original Eye Contact adapter has its own AR engine and retained host format 
 
 ## Audio
 
-Each channel has separate mono model state. A streaming band-limited resampler bridges host rates and SDK rates. Block adaptation, declared delay and zero-padding preserve duration and support arbitrary host buffer boundaries. Mix/gain ramps avoid abrupt control changes; bypass retains the source path.
+Independent stereo uses separate mono model state per channel. Studio Voice also offers Dialogue mode: average the two input channels, run one model, then duplicate the processed voice to the stereo outputs. Dry history and bypass retain the original channel layout. Optional linked, attenuation-only level matching runs after latency alignment and before dry/wet mixing. New Studio Voice instances select Dialogue and level matching; version-one/two VST states and existing AE projects retain independent channels and their previous level.
+
+A streaming band-limited resampler bridges host rates and SDK rates. Block adaptation, declared delay and zero-padding preserve duration and support arbitrary host buffer boundaries. Mix/gain ramps avoid abrupt control changes; bypass retains the source path.
 
 Native AE audio requests fixed windows with pre-roll instead of relying on earlier host calls. VST3 processors expose generic host UI, persistent state, transport reset handling and reported latency. Studio Voice HQ is intended for offline rendering. Nominal latency compensation does not make a generative speech model phase-exact.
 

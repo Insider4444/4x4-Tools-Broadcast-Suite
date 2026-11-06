@@ -11,7 +11,7 @@ std::vector<float> resampleProxy(std::span<const float> data, int width, int hei
                                  int outputWidth, int outputHeight);
 // Transfer a smooth lighting gain, retaining source texture instead of model reconstruction.
 std::vector<float> lightingGain(std::span<const float> source, std::span<const float> relit,
-                                int width, int height);
+                                int width, int height, std::span<const float> matte = {});
 void refineMatte(std::vector<float>& matte, std::span<const float> bgr, int width, int height,
                  float edgeAdjustment = 0, float feather = 0);
 struct Framing { float centerX{.5f}, centerY{.5f}; bool found{}; };

@@ -12,6 +12,11 @@ struct Controls {
     bool microphoneChoice{};
     int microphone{};
     std::function<void(Controls&)> synchronize;
+    bool channelChoice{};
+    int channelMode{}; // 0 independent stereo, 1 one centred dialogue model
+    bool matchLevel{};
+    bool strengthChoice{};
+    double strength{1};
 };
 HWND createPanel(HWND parent,const Controls& controls);
 // Native Adobe button opens an owned panel; choices return through Adobe's

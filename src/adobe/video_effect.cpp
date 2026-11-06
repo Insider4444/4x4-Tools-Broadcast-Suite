@@ -5,12 +5,14 @@
 #include "AE_EffectSuites.h"
 #include "AE_Macros.h"
 #include "Param_Utils.h"
+#include "slider.h"
 #include "entry.h"
 #include "SPBasic.h"
 #include "PrSDKAESupport.h"
 #include "EffectSpec.h"
 #include "core/frame.h"
 #include "core/image_ops.h"
+#include "core/lighting_color.h"
 #include "nvidia/video_effects.h"
 #include "core/processing_status.h"
 #include "core/render_cache.h"
@@ -25,7 +27,7 @@
 
 using namespace fourbyfour;
 namespace {
-enum Param { Input,Enabled,Amount,Quality,KeepChair,Edge,Feather,ShowMask,Blur,Azimuth,Elevation,Exposure,Warmth,Zoom,Horizontal,Vertical,Compare,NoiseModel,Monitor,Count };
+enum Param { Input,Enabled,Amount,Quality,KeepChair,Edge,Feather,ShowMask,Blur,Azimuth,Elevation,Exposure,Warmth,Zoom,Horizontal,Vertical,Compare,NoiseModel,Monitor,InputEncoding,Count };
 constexpr bool removal=FOUR_VIDEO_KIND==0, blur=FOUR_VIDEO_KIND==1, relight=FOUR_VIDEO_KIND==2,
     denoise=FOUR_VIDEO_KIND==3, framing=FOUR_VIDEO_KIND==4, restoration=FOUR_VIDEO_KIND==5;
 constexpr bool segmented=removal||blur||relight||framing;
@@ -66,39 +68,42 @@ PF_Err fail(PF_OutData* out,const char* message) {
 PF_Err parameters(PF_InData* in_data,PF_OutData* out_data) {
     PF_ParamDef def{};
     PF_ADD_CHECKBOX("Effect","Enabled",TRUE,0,Enabled);
-    def={}; PF_ADD_FLOAT_SLIDERX("Mix",0,100,0,100,100,1,PF_ValueDisplayFlag_PERCENT,0,Amount);
+    def={}; FOUR_ADD_FLOAT_SLIDERX("Mix",0,100,0,100,100,1,PF_ValueDisplayFlag_PERCENT,0,Amount);
     def={}; PF_ADD_POPUP("Processing Quality",2,2,"Highest Quality (Render)|Interactive Preview",Quality);
     def={}; if(!segmented) def.ui_flags=PF_PUI_INVISIBLE;
     PF_ADD_CHECKBOX("Subject","Keep chair",FALSE,0,KeepChair);
     def={}; if(!segmented) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Matte Edge Bias",-100,100,-50,50,0,1,PF_ValueDisplayFlag_PERCENT,0,Edge);
+    FOUR_ADD_FLOAT_SLIDERX("Matte Edge Bias",-100,100,-50,50,0,1,PF_ValueDisplayFlag_PERCENT,0,Edge);
     def={}; if(!segmented) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Edge Refinement",0,6,0,3,.75,2,PF_ValueDisplayFlag_NONE,0,Feather);
+    FOUR_ADD_FLOAT_SLIDERX("Edge Refinement",0,6,0,3,.75,2,PF_ValueDisplayFlag_NONE,0,Feather);
     def={}; if(!segmented) def.ui_flags=PF_PUI_INVISIBLE;
     PF_ADD_CHECKBOX("Matte View","Show confidence matte",FALSE,0,ShowMask);
     def={}; if(!blur) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Background Blur",0,100,0,100,50,1,PF_ValueDisplayFlag_PERCENT,0,Blur);
+    FOUR_ADD_FLOAT_SLIDERX("Background Blur",0,100,0,100,50,1,PF_ValueDisplayFlag_PERCENT,0,Blur);
     def={}; if(!relight) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Light Direction",-180,180,-180,180,-35,1,PF_ValueDisplayFlag_NONE,0,Azimuth);
+    FOUR_ADD_FLOAT_SLIDERX("Light Direction",-180,180,-180,180,-35,1,PF_ValueDisplayFlag_NONE,0,Azimuth);
     def={}; if(!relight) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Light Elevation",-80,80,-60,60,25,1,PF_ValueDisplayFlag_NONE,0,Elevation);
+    FOUR_ADD_FLOAT_SLIDERX("Light Elevation",-80,80,-60,60,25,1,PF_ValueDisplayFlag_NONE,0,Elevation);
     def={}; if(!relight) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Light Exposure",-4,4,-2,2,0,2,PF_ValueDisplayFlag_NONE,0,Exposure);
+    FOUR_ADD_FLOAT_SLIDERX("Light Exposure",-4,4,-2,2,0,2,PF_ValueDisplayFlag_NONE,0,Exposure);
     def={}; if(!relight) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Light Warmth",-100,100,-100,100,0,1,PF_ValueDisplayFlag_NONE,0,Warmth);
+    FOUR_ADD_FLOAT_SLIDERX("Light Warmth",-100,100,-100,100,0,1,PF_ValueDisplayFlag_NONE,0,Warmth);
     def={}; if(!framing) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Framing Zoom",100,400,100,200,125,1,PF_ValueDisplayFlag_PERCENT,0,Zoom);
+    FOUR_ADD_FLOAT_SLIDERX("Framing Zoom",100,400,100,200,125,1,PF_ValueDisplayFlag_PERCENT,0,Zoom);
     def={}; if(!framing) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Horizontal Trim",-50,50,-25,25,0,1,PF_ValueDisplayFlag_PERCENT,0,Horizontal);
+    FOUR_ADD_FLOAT_SLIDERX("Horizontal Trim",-50,50,-25,25,0,1,PF_ValueDisplayFlag_PERCENT,0,Horizontal);
     def={}; if(!framing) def.ui_flags=PF_PUI_INVISIBLE;
-    PF_ADD_FLOAT_SLIDERX("Vertical Trim",-50,50,-25,25,0,1,PF_ValueDisplayFlag_PERCENT,0,Vertical);
+    FOUR_ADD_FLOAT_SLIDERX("Vertical Trim",-50,50,-25,25,0,1,PF_ValueDisplayFlag_PERCENT,0,Vertical);
     def={}; PF_ADD_CHECKBOX("Compare","Original left / effect right",FALSE,0,Compare);
     def={}; if(!denoise) def.ui_flags=PF_PUI_INVISIBLE;
     PF_ADD_POPUP("Noise Cleanup Model",2,1,"Preserve Fine Detail|Heavy Noise",NoiseModel);
     PF_ADD_BUTTON("Processing", "Status and Quality…",PF_PUI_STD_CONTROL_ONLY,PF_ParamFlag_SUPERVISE,Monitor);
+    def={};if(!relight)def.ui_flags=PF_PUI_INVISIBLE;
+    def.flags=PF_ParamFlag_CANNOT_TIME_VARY;
+    PF_ADD_POPUP("Input Encoding",2,1,"SDR (Rec.709)|Apple Log (Rec.2020)",InputEncoding);
     out_data->num_params=Count; return PF_Err_NONE;
 }
-VideoResult model(std::span<const float> proxy,int w,int h,VideoEffect effect,const VideoSettings& s,std::span<const std::vector<float>> past = {}) {
+VideoResult model(std::span<const float> proxy,int w,int h,VideoEffect effect,const VideoSettings& s,std::span<const std::vector<float>> past = {},LightingEncoding encoding=LightingEncoding::rec709) {
     if(denoise&&!s.preview&&(w>1920||h>1080)) {
         // Full-resolution overlap tiles keep 4K detail instead of reducing a
         // whole frame to the webcam model's 1080p limit.
@@ -157,8 +162,11 @@ VideoResult model(std::span<const float> proxy,int w,int h,VideoEffect effect,co
     std::vector<std::vector<float>> window;
     for(const auto& frame:past) window.push_back(resampleProxy(frame,w,h,3,mw,mh));
     window.push_back(std::move(resized));
+    // Convert every temporal frame in the same space, at bounded model size.
+    // Full-size log pixels never take a round trip through the SDR proxy.
+    if(relight)for(auto& frame:window){frame=lightingModelProxy(frame,encoding);quantizeSdrProxy(frame);}
     auto result=processVideoWindow(effect,window,mw,mh,s);
-    if(relight) result.bgr=lightingGain(window.back(),result.bgr,mw,mh);
+    if(relight) result.bgr=lightingGain(window.back(),result.bgr,mw,mh,result.matte);
     // Resize the correction once, keeping source texture at host resolution.
     if(restoration||denoise)for(std::size_t i=0;i<result.bgr.size();++i)result.bgr[i]-=window.back()[i];
     if(mw!=w||mh!=h) {
@@ -168,7 +176,6 @@ VideoResult model(std::span<const float> proxy,int w,int h,VideoEffect effect,co
             result.bgr[i*3+c]=proxy[i*3+c]*result.matte[i]+result.bgr[i*3+c]*(1-result.matte[i]);
         result.width=w; result.height=h;
     }
-    if(relight) for(std::size_t i=0;i<result.bgr.size();++i) result.bgr[i]*=proxy[i];
     return result;
 }
 PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& source,PF_EffectWorld& destination,bool smart=false,
@@ -186,18 +193,19 @@ PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& so
     processing::begin(FOUR_VIDEO_KIND,params[Quality]->u.pd.value==2?L"Interactive Preview":L"Highest Quality · Render");
     RenderKey key(reinterpret_cast<std::uintptr_t>(in->effect_ref));key.append(&in->current_time,sizeof(in->current_time));
     key.append(&in->time_step,sizeof(in->time_step));key.append(input);
-    const std::array<double,17> controlKey{double(params[Enabled]->u.bd.value),params[Amount]->u.fs_d.value,double(params[Quality]->u.pd.value),
+    const std::array<double,18> controlKey{double(params[Enabled]->u.bd.value),params[Amount]->u.fs_d.value,double(params[Quality]->u.pd.value),
         double(params[KeepChair]->u.bd.value),params[Edge]->u.fs_d.value,params[Feather]->u.fs_d.value,double(params[ShowMask]->u.bd.value),
         params[Blur]->u.fs_d.value,params[Azimuth]->u.fs_d.value,params[Elevation]->u.fs_d.value,params[Exposure]->u.fs_d.value,params[Warmth]->u.fs_d.value,
-        params[Zoom]->u.fs_d.value,params[Horizontal]->u.fs_d.value,params[Vertical]->u.fs_d.value,double(params[Compare]->u.bd.value),double(params[NoiseModel]->u.pd.value)};
+        params[Zoom]->u.fs_d.value,params[Horizontal]->u.fs_d.value,params[Vertical]->u.fs_d.value,double(params[Compare]->u.bd.value),double(params[NoiseModel]->u.pd.value),double(params[InputEncoding]->u.pd.value)};
     key.append(controlKey.data(),sizeof(controlKey));
     for(const auto& adjacent:context)if(adjacent.pixels)key.append(adjacent);
     if(cache.restore(key,output)){processing::finish(FOUR_VIDEO_KIND,L"Ready · reused cached frame");return PF_Err_NONE;}
     auto complete=[&]{cache.store(key,output);processing::finish(FOUR_VIDEO_KIND);return PF_Err_NONE;};
-    auto proxy=toBgrFloat(input);
+    auto proxy=toBgrFloat(input,!relight);
+    const auto encoding=relight&&params[InputEncoding]->u.pd.value==2?LightingEncoding::appleLog:LightingEncoding::rec709;
     // U8 models see a quantized proxy. Compare their output against that exact
     // proxy so unchanged pixels retain the host's original 16/32-bit precision.
-    if(!denoise) quantizeSdrProxy(proxy);
+    if(!denoise&&!relight) quantizeSdrProxy(proxy);
     if(PF_ABORT(in)){processing::finish(FOUR_VIDEO_KIND,L"Cancelled");return PF_Interrupt_CANCEL;}
     VideoSettings settings;
     settings.statusEffect=FOUR_VIDEO_KIND;
@@ -213,17 +221,18 @@ PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& so
     std::vector<std::vector<float>> past;
     if(!settings.preview&&!restoration) for(std::size_t i=0;i<std::min<std::size_t>(context.size(),2);++i) {
         if(context[i].pixels&&context[i].width==input.width&&context[i].height==input.height) {
-            auto p=toBgrFloat(context[i]);if(!denoise) quantizeSdrProxy(p);
+            auto p=toBgrFloat(context[i],!relight);if(!denoise&&!relight) quantizeSdrProxy(p);
             past.push_back(std::move(p));
         }
     }
-    auto processed=model(proxy,input.width,input.height,effect,settings,past);
+    auto processed=model(proxy,input.width,input.height,effect,settings,past,encoding);
     if(processing::cancelled(FOUR_VIDEO_KIND)){processing::finish(FOUR_VIDEO_KIND,L"Cancelled");return PF_Interrupt_CANCEL;}
     processing::report(FOUR_VIDEO_KIND,L"Compositing original detail and alpha…",3,4);
     if(PF_ABORT(in)){processing::finish(FOUR_VIDEO_KIND,L"Cancelled");return PF_Interrupt_CANCEL;}
     if(segmented) refineMatte(processed.matte,proxy,input.width,input.height,
         static_cast<float>(params[Edge]->u.fs_d.value/100),settings.preview?0.f:static_cast<float>(params[Feather]->u.fs_d.value));
     if(segmented&&params[ShowMask]->u.bd.value) { showMatte(output,processed.matte);return complete(); }
+    if(relight)processed.bgr=illuminateSource(proxy,processed.bgr,encoding,settings.lightExposure,settings.lightWarmth,processed.matte,mix);
     if(removal) { applyFloatDelta(input,output,proxy,proxy,mix,compare,processed.matte);return complete(); }
     if(framing) {
         auto center=subjectCenter(processed.matte,input.width,input.height);
@@ -251,10 +260,8 @@ PF_Err render(PF_InData* in,PF_OutData*,PF_ParamDef* params[],PF_EffectWorld& so
         }
         fromRgbaFloat(output,transformed);return complete();
     }
-    if(relight) for(std::size_t i=0;i<processed.matte.size();++i) for(int c=0;c<3;++c)
-        processed.bgr[i*3+c]=proxy[i*3+c]+processed.matte[i]*(processed.bgr[i*3+c]-proxy[i*3+c]);
     if(restoration||denoise)applyModelDelta(input,output,processed.bgr,mix,compare);
-    else applyFloatDelta(input,output,proxy,processed.bgr,mix,compare);
+    else applyFloatDelta(input,output,proxy,processed.bgr,relight?1.f:mix,compare);
     return complete();
 }
 PF_Err preRender(PF_InData* in,PF_PreRenderExtra* extra) {

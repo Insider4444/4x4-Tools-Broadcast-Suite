@@ -10,7 +10,7 @@ namespace fourbyfour::ui {
 namespace {
 constexpr int Width=600,Height=488;
 struct Panel {
-    Controls controls;HWND window{},phase{},progress{},metrics{},memory{},mode{},quality{},mix{},gain{},bypass{},mixValue{},gainValue{},profile{};
+    Controls controls;HWND window{},phase{},progress{},metrics{},memory{},mode{},quality{},mix{},gain{},bypass{},mixValue{},gainValue{},profile{},channels{},match{},strength{},strengthValue{};
     HFONT font{},title{};HBRUSH background{},card{};bool marquee{},owned{};
     IDXGIAdapter3* adapter{};ULONGLONG memoryTick{};
     ~Panel(){if(adapter)adapter->Release();if(font)DeleteObject(font);if(title)DeleteObject(title);if(background)DeleteObject(background);if(card)DeleteObject(card);}
@@ -50,14 +50,28 @@ struct Panel {
                 for(const auto* text:{L"Natural",L"Bright",L"Vibrant",L"Flat",L"Full",L"Thin",L"Warm"})SendMessageW(profile,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(text));
                 SendMessageW(profile,CB_SETCURSEL,controls.microphone,0);
             }
+            if(controls.strengthChoice){
+                add(L"STATIC",L"Suppression",0,26,213,104,24,0);
+                strength=add(TRACKBAR_CLASSW,L"",TBS_HORZ|WS_TABSTOP,134,206,276,32,109);SendMessageW(strength,TBM_SETRANGE,TRUE,MAKELPARAM(0,100));SendMessageW(strength,TBM_SETPOS,TRUE,static_cast<int>(controls.strength*100));
+                strengthValue=add(L"STATIC",L"",0,416,213,48,22,0);readouts();
+            }
+            if(controls.channelChoice){
+                add(L"STATIC",L"Voice channels",0,26,246,104,24,0);
+                channels=add(WC_COMBOBOXW,L"",CBS_DROPDOWNLIST|WS_TABSTOP,142,241,426,100,107);
+                for(const auto* text:{L"Independent stereo",L"Dialogue · one centred voice"})SendMessageW(channels,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(text));
+                SendMessageW(channels,CB_SETCURSEL,controls.channelMode,0);
+                match=add(L"BUTTON",L"Match input level",BS_AUTOCHECKBOX|WS_TABSTOP,142,276,220,25,108);
+                SendMessageW(match,BM_SETCHECK,controls.matchLevel?BST_CHECKED:BST_UNCHECKED,0);
+            }
         } else add(L"STATIC",L"Preview reduces model work. Highest Quality uses the full render path.\nApply the quality choice before the final render.",0,26,137,540,58,0);
-        mode=add(L"STATIC",L"Waiting for an Adobe processing request",0,26,252,540,24,0);
-        phase=add(L"STATIC",L"Ready",0,26,282,540,24,0);
-        progress=add(PROGRESS_CLASSW,L"",PBS_SMOOTH,26,312,540,17,0);SendMessageW(progress,PBM_SETRANGE32,0,100);
-        metrics=add(L"STATIC",L"",0,26,339,540,28,0);
-        memory=add(L"STATIC",L"GPU memory: checking…",0,26,375,540,28,0);
-        add(L"BUTTON",L"Cancel current work",WS_TABSTOP,26,423,174,32,105);
-        add(L"STATIC",L"Cancellation waits for the current NVIDIA model step.",0,216,426,354,42,0);
+        const int offset=controls.channelChoice?72:0;
+        mode=add(L"STATIC",L"Waiting for an Adobe processing request",0,26,252+offset,540,24,0);
+        phase=add(L"STATIC",L"Ready",0,26,282+offset,540,24,0);
+        progress=add(PROGRESS_CLASSW,L"",PBS_SMOOTH,26,312+offset,540,17,0);SendMessageW(progress,PBM_SETRANGE32,0,100);
+        metrics=add(L"STATIC",L"",0,26,339+offset,540,28,0);
+        memory=add(L"STATIC",L"GPU memory: checking…",0,26,375+offset,540,28,0);
+        add(L"BUTTON",L"Cancel current work",WS_TABSTOP,26,423+offset,174,32,105);
+        add(L"STATIC",L"Cancellation waits for the current NVIDIA model step.",0,216,426+offset,354,42,0);
         IDXGIFactory1* factory{};
         if(SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory)))) {
             for(UINT i=0;!adapter;++i){IDXGIAdapter1* item{};if(factory->EnumAdapters1(i,&item)==DXGI_ERROR_NOT_FOUND)break;if(!item)break;
@@ -66,7 +80,7 @@ struct Panel {
         }
         SetTimer(window,1,150,nullptr);
     }
-    void readouts(){wchar_t text[40]{};swprintf_s(text,L"%.0f",controls.mix*100);SetWindowTextW(mixValue,text);swprintf_s(text,L"%+.1f",controls.gainDb);SetWindowTextW(gainValue,text);}
+    void readouts(){wchar_t text[40]{};swprintf_s(text,L"%.0f",controls.mix*100);SetWindowTextW(mixValue,text);swprintf_s(text,L"%+.1f",controls.gainDb);SetWindowTextW(gainValue,text);if(strengthValue){swprintf_s(text,L"%.0f",controls.strength*100);SetWindowTextW(strengthValue,text);}}
     void refresh() {
         if(controls.synchronize) {
             controls.synchronize(controls);
@@ -75,6 +89,9 @@ struct Panel {
             if(gain)SendMessageW(gain,TBM_SETPOS,TRUE,static_cast<int>((controls.gainDb+24)*10));
             if(bypass)SendMessageW(bypass,BM_SETCHECK,controls.bypass?BST_CHECKED:BST_UNCHECKED,0);
             if(profile)SendMessageW(profile,CB_SETCURSEL,controls.microphone,0);
+            if(channels)SendMessageW(channels,CB_SETCURSEL,controls.channelMode,0);
+            if(match)SendMessageW(match,BM_SETCHECK,controls.matchLevel?BST_CHECKED:BST_UNCHECKED,0);
+            if(strength)SendMessageW(strength,TBM_SETPOS,TRUE,static_cast<int>(controls.strength*100));
             if(mix&&gain)readouts();
         }
         if(GetTickCount64()-memoryTick>1000) {
@@ -111,13 +128,16 @@ LRESULT CALLBACK procedure(HWND window,UINT message,WPARAM w,LPARAM l) {
         }
         if(LOWORD(w)==104&&panel->controls.changed)panel->controls.changed(3,SendMessageW(panel->bypass,BM_GETCHECK,0,0)==BST_CHECKED?1.:0.);
         if(LOWORD(w)==106&&HIWORD(w)==CBN_SELCHANGE&&panel->controls.changed)panel->controls.changed(4,double(SendMessageW(reinterpret_cast<HWND>(l),CB_GETCURSEL,0,0)));
+        if(LOWORD(w)==107&&HIWORD(w)==CBN_SELCHANGE&&panel->controls.changed)panel->controls.changed(5,double(SendMessageW(panel->channels,CB_GETCURSEL,0,0)));
+        if(LOWORD(w)==108&&panel->controls.changed)panel->controls.changed(6,SendMessageW(panel->match,BM_GETCHECK,0,0)==BST_CHECKED?1.:0.);
         break;
     case WM_HSCROLL:
         if(panel->controls.changed) {
             const bool mix=reinterpret_cast<HWND>(l)==panel->mix;
+            const bool strength=reinterpret_cast<HWND>(l)==panel->strength;
             const auto value=SendMessageW(reinterpret_cast<HWND>(l),TBM_GETPOS,0,0);
-            if(mix)panel->controls.mix=value/100.;else panel->controls.gainDb=value/10.-24.;panel->readouts();
-            panel->controls.changed(mix?1:2,mix?value/100.:value/10.-24.);
+            if(strength)panel->controls.strength=value/100.;else if(mix)panel->controls.mix=value/100.;else panel->controls.gainDb=value/10.-24.;panel->readouts();
+            panel->controls.changed(strength?7:mix?1:2,(strength||mix)?value/100.:value/10.-24.);
         }return 0;
     case WM_CTLCOLORSTATIC:case WM_CTLCOLORBTN:
         SetTextColor(reinterpret_cast<HDC>(w),RGB(223,241,239));SetBkColor(reinterpret_cast<HDC>(w),RGB(13,21,24));return reinterpret_cast<LRESULT>(panel->background);
@@ -138,7 +158,7 @@ const wchar_t* className() {
 HWND createPanel(HWND parent,const Controls& controls) {
     INITCOMMONCONTROLSEX common{sizeof(common),ICC_PROGRESS_CLASS|ICC_BAR_CLASSES};InitCommonControlsEx(&common);
     auto panel=std::make_unique<Panel>();panel->controls=controls;
-    auto window=CreateWindowExW(0,className(),L"4x4Tools Processing",WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,0,0,Width,Height,parent,nullptr,GetModuleHandleW(nullptr),panel.get());
+    auto window=CreateWindowExW(0,className(),L"4x4Tools Processing",WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,0,0,Width,Height+(controls.channelChoice?72:0),parent,nullptr,GetModuleHandleW(nullptr),panel.get());
     if(window){panel->owned=true;panel.release();}return window;
 }
 int showPanel(int effect,int quality,bool choice) {

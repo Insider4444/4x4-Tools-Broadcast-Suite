@@ -23,6 +23,9 @@ $receipt=Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
 $manifest=Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if($receipt.product -ne '4x4Tools Broadcast Suite' -or $manifest.product -ne $receipt.product -or $receipt.root -ine $root){throw 'The installed suite receipt is not recognized.'}
 $sources=@{}
+if(@($manifest.files | Where-Object path -eq 'plugins/video/4x4EyeContact.aex').Count -eq 1){
+    $sources['plugins/video/4x4EyeContact.aex']=Join-Path $build 'bin\4x4EyeContact.aex'
+}
 foreach($name in @('BackgroundRemove','BackgroundBlur','StudioLight','VideoDenoise','AutoFrame','DetailRestore')){$sources['plugins/video/4x4'+$name+'.aex']=Join-Path $build ('bin\4x4'+$name+'.aex')}
 foreach($name in @('NoiseClean','RoomEchoClean','VoiceClean','StudioVoicePreview','StudioVoiceHQ','VoiceRestore')){$sources['plugins/audio/4x4'+$name+'.aex']=Join-Path $build ('bin\4x4'+$name+'.aex')}
 foreach($relative in @('Contents/x86_64-win/4x4Tools Audio.vst3','Contents/Resources/moduleinfo.json')){$sources['plugins/vst3/4x4Tools Audio.vst3/'+$relative]=Join-Path $build ('VST3/Release/4x4Tools Audio.vst3/'+$relative)}

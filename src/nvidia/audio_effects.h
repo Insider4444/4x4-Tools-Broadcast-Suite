@@ -5,7 +5,11 @@
 #include <vector>
 namespace fourbyfour {
 enum class AudioEffect { noise, echo, clean, studioPreview, studioQuality, restore };
-struct AudioSettings { AudioEffect effect{AudioEffect::clean}; int channels{1}; int micProfile{-1}; int statusEffect{-1}; };
+enum class AudioChannelMode { independent,dialogue };
+struct AudioSettings {
+    AudioEffect effect{AudioEffect::clean}; int channels{1}; int micProfile{-1}; int statusEffect{-1};
+    AudioChannelMode channelMode{AudioChannelMode::independent}; bool matchLevel{}; float intensity{1};
+};
 class AudioEngine {
     struct Impl;
     std::unique_ptr<Impl> impl;
@@ -20,6 +24,7 @@ public:
     // history; channels and neighboring plugin instances never share samples.
     void run(std::span<const float* const> input,std::span<float* const> output);
     void profile(int id);
+    void intensity(float value);
 };
 std::filesystem::path audioRuntimeRoot();
 }

@@ -9,8 +9,8 @@
 #include <stdexcept>
 #include <vector>
 using Main=PF_Err (*)(PF_Cmd,PF_InData*,PF_OutData*,PF_ParamDef*[],PF_LayerDef*,void*);
-static std::array<PF_ParamDef,19> controls{};
-static PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* p) {if(index!=-1||p->uu.id<1||p->uu.id>=19) return 999;controls[p->uu.id]=*p;return 0;}
+static std::array<PF_ParamDef,20> controls{};
+static PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* p) {if(index!=-1||p->uu.id<1||p->uu.id>=20) return 999;controls[p->uu.id]=*p;return 0;}
 static PF_Err abortRender(PF_ProgPtr) {return 0;}
 void require(bool result,const char* text) {if(!result) throw std::runtime_error(text);}
 int wmain(int argc,wchar_t** argv) {
@@ -26,12 +26,20 @@ int wmain(int argc,wchar_t** argv) {
                 require(FindResourceW(module,MAKEINTRESOURCEW(16000),L"PiPL")!=nullptr,"Missing PiPL");
                 PF_InData in{};PF_OutData out{};in.inter.add_param=add;in.inter.abort=abortRender;
                 controls={};require(!main(PF_Cmd_GLOBAL_SETUP,&in,&out,nullptr,nullptr,nullptr),"Global setup failed");
-                require(out.my_version==PF_VERSION(0,2,1,PF_Stage_DEVELOP,2),"Wrong effect version");
+                require(out.my_version==PF_VERSION(0,2,1,PF_Stage_DEVELOP,4),"Wrong effect version");
                 require(audio?bool(out.out_flags&PF_OutFlag_AUDIO_EFFECT_ONLY):bool(out.out_flags2&PF_OutFlag2_SUPPORTS_SMART_RENDER),"Incorrect Adobe capability flags");
-                require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr)&&out.num_params==(audio?7:19),"Wrong parameter contract");
-                std::array<PF_ParamDef*,19> params{};for(int i=0;i<19;++i) params[i]=&controls[i];
+                require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr)&&out.num_params==(audio?10:20),"Wrong parameter contract");
+                std::array<PF_ParamDef*,20> params{};for(int i=0;i<20;++i) params[i]=&controls[i];
                 require(controls[1].u.bd.value&&controls[2].u.fs_d.value==100,"Effect and mix defaults are not enabled");
                 if(!audio)require(controls[3].u.pd.value==2,"New video instances must default to interactive processing");
+                if(audio){
+                    const bool studio=std::wstring(name)==L"StudioVoicePreview"||std::wstring(name)==L"StudioVoiceHQ";
+                    require(controls[7].u.pd.dephault==(studio?2:1)&&controls[7].u.pd.value==1,"AE voice channel migration/default is incorrect");
+                    require(bool(controls[8].u.bd.dephault)==studio&&!controls[8].u.bd.value,"AE level matching migration/default is incorrect");
+                    const bool cleanup=std::wstring(name)==L"NoiseClean"||std::wstring(name)==L"RoomEchoClean"||std::wstring(name)==L"VoiceClean";
+                    require(controls[9].u.fs_d.value==100&&bool(controls[9].ui_flags&PF_PUI_INVISIBLE)==!cleanup,"Suppression controls are missing or exposed on an unsupported model");
+                }else if(std::wstring(name)==L"StudioLight")require(controls[19].u.pd.num_choices==2&&controls[19].u.pd.value==1,"Studio Light input encoding default changed");
+                if(!audio)require(bool(controls[9].ui_flags&PF_PUI_INVISIBLE)==(std::wstring(name)!=L"StudioLight"),"Unrelated lighting sliders are visible on another effect");
                 controls[1].u.bd.value=0;
                 if(audio) {
                     std::array<float,18> source{},destination{};for(int i=0;i<18;++i) source[i]=i*.0173f;

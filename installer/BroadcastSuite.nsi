@@ -33,11 +33,11 @@ BrandingText "© 2026 4x4Tools"
 SetCompressor /SOLID lzma
 ShowInstDetails show
 ShowUninstDetails show
-VIProductVersion "0.2.1.0"
+VIProductVersion "0.2.1.1"
 VIAddVersionKey /LANG=1033 "ProductName" "4x4Tools Broadcast Suite"
 VIAddVersionKey /LANG=1033 "CompanyName" "4x4Tools"
 VIAddVersionKey /LANG=1033 "FileDescription" "4x4Tools Broadcast Suite Setup"
-VIAddVersionKey /LANG=1033 "FileVersion" "0.2.1.0"
+VIAddVersionKey /LANG=1033 "FileVersion" "0.2.1.1"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Copyright © 2026 4x4Tools"
 !define MUI_ICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"
 !define MUI_UNICON "${PROJECT_ROOT}\resources\branding\4x4Tools.ico"

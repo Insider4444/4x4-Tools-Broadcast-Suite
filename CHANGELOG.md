@@ -8,6 +8,9 @@
 - Eye Contact, the six picture effects and voice processing preserve Adobe's CUDA context. Cleanup errors are contained during teardown.
 - Closing one picture-effect instance no longer clears another instance's cached output or releases its active model. Native AE audio also tracks the instance that owns its model.
 - Video defaults to Interactive Preview with bounded model images. Source-resolution corrections preserve original detail; Studio Light transfers lighting onto source texture.
+- Studio Light estimates matte-weighted, linear luminance gains instead of transferring the model's reconstructed colour or undefined background pixels. Neutral lighting preserves source colour and texture. An explicit Apple Log 1 / Rec.2020 input option converts only bounded inference images and returns the correction in the source encoding.
+- New Studio Voice instances offer a single-model, centred Dialogue mode and attenuation-only input level matching. Independent stereo remains available; existing projects retain their previous channel and volume settings. Bypass preserves the original stereo recording.
+- Noise/echo/combined voice cleanup exposes a real NVIDIA suppression-strength slider alongside Mix and Output Gain. Audio status distinguishes processed model output from preparation/pass-through and silent input. Unrelated Adobe sliders stay hidden.
 - Native processing controls expose quality, elapsed time, GPU memory, status and cancellation. Premiere voice effects include a native editor.
 - Setup downloads independent packages concurrently and shows byte-based download, verification and extraction progress, transfer speed and estimated time remaining. Interrupted downloads resume and completed packages are verified.
 

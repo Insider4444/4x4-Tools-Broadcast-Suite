@@ -22,7 +22,7 @@
 using namespace Steinberg;
 using namespace Steinberg::Vst;
 namespace {
-enum Id : ParamID { Mix=100,Gain=101,Profile=102,Bypass=103,Quality=104 };
+enum Id : ParamID { Mix=100,Gain=101,Profile=102,Bypass=103,Quality=104,Channels=105,MatchLevel=106,Strength=107 };
 const std::array<FUID,6> processorIds{{
     {0x34425834,0x4E4F4953,0x45414658,0x00020001},{0x34425834,0x4543484F,0x41414658,0x00020001},
     {0x34425834,0x434C4541,0x4E414658,0x00020001},{0x34425834,0x53545544,0x4C4C4658,0x00020001},
@@ -32,18 +32,21 @@ const std::array<FUID,6> controllerIds{{
     {0x34425834,0x434C4541,0x4E414354,0x00020001},{0x34425834,0x53545544,0x4C4C4354,0x00020001},
     {0x34425834,0x53545544,0x48514354,0x00020001},{0x34425834,0x52455354,0x4F414354,0x00020001}}};
 struct State {
-    double mix{1},gain{2./3.}; int32 profile{},bypass{},quality{};
+    double mix{1},gain{2./3.},strength{1}; int32 profile{},bypass{},quality{},channelMode{},matchLevel{};
     bool read(IBStream* stream) {
         if(!stream) return false; IBStreamer reader(stream,kLittleEndian);int32 version{};
-        if(!reader.readInt32(version)||(version!=1&&version!=2)||!reader.readDouble(mix)||!reader.readDouble(gain)||!reader.readInt32(profile)||!reader.readInt32(bypass)) return false;
+        if(!reader.readInt32(version)||(version<1||version>4)||!reader.readDouble(mix)||!reader.readDouble(gain)||!reader.readInt32(profile)||!reader.readInt32(bypass)) return false;
         if(version==1)quality=2; // preserve the original HQ choice in existing projects
         else if(!reader.readInt32(quality)||quality<0||quality>2)return false;
+        channelMode=matchLevel=0; // saved stereo projects retain their sound
+        if(version>=3&&(!reader.readInt32(channelMode)||!reader.readInt32(matchLevel)||channelMode<0||channelMode>1||matchLevel<0||matchLevel>1))return false;
+        strength=1;if(version>=4&&(!reader.readDouble(strength)||!std::isfinite(strength)))return false;strength=std::clamp(strength,0.,1.);
         if(!std::isfinite(mix)||!std::isfinite(gain)||profile<0||profile>6) return false;
         mix=std::clamp(mix,0.,1.);gain=std::clamp(gain,0.,1.);bypass=bypass?1:0;return true;
     }
     bool write(IBStream* stream) const {
         if(!stream) return false; IBStreamer writer(stream,kLittleEndian);
-        return writer.writeInt32(2)&&writer.writeDouble(mix)&&writer.writeDouble(gain)&&writer.writeInt32(profile)&&writer.writeInt32(bypass)&&writer.writeInt32(quality);
+        return writer.writeInt32(4)&&writer.writeDouble(mix)&&writer.writeDouble(gain)&&writer.writeInt32(profile)&&writer.writeInt32(bypass)&&writer.writeInt32(quality)&&writer.writeInt32(channelMode)&&writer.writeInt32(matchLevel)&&writer.writeDouble(strength);
     }
 };
 class VoiceView final:public CPluginView {
@@ -51,7 +54,7 @@ class VoiceView final:public CPluginView {
     fourbyfour::ui::Controls controls;
     HWND window{};
 public:
-    VoiceView(EditController* controller,fourbyfour::ui::Controls settings):owner(controller),controls(std::move(settings)) {owner->addRef();rect={0,0,600,488};}
+    VoiceView(EditController* controller,fourbyfour::ui::Controls settings):owner(controller),controls(std::move(settings)) {owner->addRef();rect={0,0,600,controls.channelChoice?560:488};}
     ~VoiceView() override {if(window)DestroyWindow(window);owner->release();}
     tresult PLUGIN_API isPlatformTypeSupported(FIDString type) override {return type&&!std::strcmp(type,kPlatformTypeHWND)?kResultTrue:kResultFalse;}
     tresult PLUGIN_API attached(void* parent,FIDString type) override {
@@ -69,6 +72,7 @@ public:
         const auto error=EditController::initialize(context);if(error!=kResultOk) return error;
         parameters.addParameter(new RangeParameter(STR16("Mix"),Mix,STR16("%"),0,100,100));
         parameters.addParameter(new RangeParameter(STR16("Output Gain"),Gain,STR16("dB"),-24,12,0));
+        if constexpr(Kind<3)parameters.addParameter(new RangeParameter(STR16("Suppression"),Strength,STR16("%"),0,100,100));
         if constexpr(Kind==3) {
             auto* p=new StringListParameter(STR16("Microphone Character"),Profile);
             for(const auto* text:{STR16("Natural"),STR16("Bright"),STR16("Vibrant"),STR16("Flat"),STR16("Full"),STR16("Thin"),STR16("Warm")}) p->appendString(text);
@@ -79,6 +83,12 @@ public:
             auto* quality=new StringListParameter(STR16("Processing"),Quality,nullptr,0);
             quality->appendString(STR16("Auto: Preview / Offline HQ"));quality->appendString(STR16("Interactive Preview"));quality->appendString(STR16("Highest Quality: Offline Render"));parameters.addParameter(quality);
         }
+        if constexpr(Kind==3||Kind==4) {
+            auto* channel=new StringListParameter(STR16("Voice Channels"),Channels,nullptr,ParameterInfo::kIsList);
+            channel->appendString(STR16("Independent stereo"));channel->appendString(STR16("Dialogue: centred voice"));parameters.addParameter(channel);
+            channel->getInfo().defaultNormalizedValue=1;channel->setNormalized(1);
+            parameters.addParameter(STR16("Match Input Level"),nullptr,1,1,ParameterInfo::kCanAutomate,MatchLevel);
+        }
         return kResultOk;
     }
     tresult PLUGIN_API setComponentState(IBStream* stream) override {
@@ -87,6 +97,8 @@ public:
         setParamNormalized(Mix,state.mix);setParamNormalized(Gain,state.gain);setParamNormalized(Bypass,state.bypass?1:0);
         if constexpr(Kind==3) setParamNormalized(Profile,state.profile/6.);
         if constexpr(Kind==4) setParamNormalized(Quality,state.quality/2.);
+        if constexpr(Kind==3||Kind==4){setParamNormalized(Channels,state.channelMode);setParamNormalized(MatchLevel,state.matchLevel);}
+        if constexpr(Kind<3)setParamNormalized(Strength,state.strength);
         restoring=false;
         return kResultOk;
     }
@@ -99,6 +111,12 @@ public:
             }
             if(componentHandler)componentHandler->restartComponent(kReloadComponent|kLatencyChanged);
         }
+        if constexpr(Kind==3||Kind==4)if(result==kResultOk&&id==Channels&&!restoring&&previous!=getParamNormalized(id)) {
+            if(auto* message=allocateMessage()){
+                message->setMessageID("4x4ToolsChannels");message->getAttributes()->setInt("channels",getParamNormalized(id)>=.5?1:0);sendMessage(message);message->release();
+            }
+            if(componentHandler)componentHandler->restartComponent(kReloadComponent);
+        }
         return result;
     }
     IPlugView* PLUGIN_API createView(FIDString name) override {
@@ -108,8 +126,10 @@ public:
         controls.microphoneChoice=Kind==3;controls.microphone=static_cast<int>(std::lround(getParamNormalized(Profile)*6));
         controls.quality=static_cast<int>(std::lround(getParamNormalized(Quality)*2));
         controls.mix=getParamNormalized(Mix);controls.gainDb=getParamNormalized(Gain)*36-24;controls.bypass=getParamNormalized(Bypass)>=.5;
+        controls.channelChoice=Kind==3||Kind==4;controls.channelMode=getParamNormalized(Channels)>=.5;controls.matchLevel=getParamNormalized(MatchLevel)>=.5;
+        controls.strengthChoice=Kind<3;controls.strength=Kind<3?getParamNormalized(Strength):1;
         controls.changed=[this](int control,double value) {
-            const auto id=control==0?Quality:control==1?Mix:control==2?Gain:control==4?Profile:Bypass;
+            const auto id=control==0?Quality:control==1?Mix:control==2?Gain:control==4?Profile:control==5?Channels:control==6?MatchLevel:control==7?Strength:Bypass;
             const double normalized=control==0?value/2:control==2?(value+24)/36:control==4?value/6:value;
             setParamNormalized(id,normalized);beginEdit(id);performEdit(id,normalized);endEdit(id);
         };
@@ -117,6 +137,8 @@ public:
             current.quality=static_cast<int>(std::lround(getParamNormalized(Quality)*2));
             current.microphone=static_cast<int>(std::lround(getParamNormalized(Profile)*6));
             current.mix=getParamNormalized(Mix);current.gainDb=getParamNormalized(Gain)*36-24;current.bypass=getParamNormalized(Bypass)>=.5;
+            current.channelMode=getParamNormalized(Channels)>=.5;current.matchLevel=getParamNormalized(MatchLevel)>=.5;
+            if constexpr(Kind<3)current.strength=getParamNormalized(Strength);
         };
         return new VoiceView(this,std::move(controls));
     }
@@ -129,11 +151,13 @@ template<int Kind> class Processor final: public AudioEffect {
     fourbyfour::AudioPipeline* observedPipeline{};
     std::vector<std::array<float,2>> dryDelay;
     std::array<std::vector<float>,2> sourceScratch,wetScratch;
-    int channels{2},rate{},latency{},maxBlock{},dryPosition{},appliedProfile{-999};
+    int channels{2},rate{},latency{},maxBlock{},dryPosition{},appliedProfile{-999};float appliedStrength{-1};
     int64 warmFrames{};
     bool resetPending{true};
     int64 nextSample{}; bool haveTime{};
     std::atomic<int> qualityChoice{0};
+    std::atomic<int> channelChoice{(Kind==3||Kind==4)?1:0};
+    int selectedChannels{};
     fourbyfour::AudioEffect selectedEffect{static_cast<fourbyfour::AudioEffect>(Kind)};
     fourbyfour::AudioEffect requestedEffect(int mode) const {
         if constexpr(Kind==4) {
@@ -152,16 +176,17 @@ template<int Kind> class Processor final: public AudioEffect {
         latency=fourbyfour::audioContract(selectedEffect,rate).latency;
         dryDelay.assign(static_cast<std::size_t>(latency),{});
         for(int c=0;c<channels;++c) {sourceScratch[c].resize(maxBlock);wetScratch[c].resize(maxBlock);}
-        warmup=std::make_unique<fourbyfour::AudioWarmup>(fourbyfour::AudioSettings{selectedEffect,channels,state.profile-1,7+Kind},rate);
+        selectedChannels=channelChoice.load();
+        warmup=std::make_unique<fourbyfour::AudioWarmup>(fourbyfour::AudioSettings{selectedEffect,channels,state.profile-1,7+Kind,static_cast<fourbyfour::AudioChannelMode>(selectedChannels),state.matchLevel!=0},rate);
         resetPending=true;haveTime=false;
     }
     void resetHistory() {
         std::fill(dryDelay.begin(),dryDelay.end(),std::array<float,2>{});dryPosition=0;
         if(auto* current=warmup?warmup->ready():nullptr)current->reset();
-        observedPipeline=nullptr;warmFrames=0;appliedProfile=-999;resetPending=false;
+        observedPipeline=nullptr;warmFrames=0;appliedProfile=-999;appliedStrength=-1;resetPending=false;
     }
 public:
-    Processor() { setControllerClass(controllerIds[Kind]); }
+    Processor() { setControllerClass(controllerIds[Kind]);if constexpr(Kind==3||Kind==4){state.channelMode=1;state.matchLevel=1;} }
     static FUnknown* create(void*) { return static_cast<IAudioProcessor*>(new Processor); }
     tresult PLUGIN_API initialize(FUnknown* context) override {
         const auto error=AudioEffect::initialize(context);if(error!=kResultOk) return error;
@@ -193,7 +218,7 @@ public:
     tresult PLUGIN_API setActive(TBool active) override {
         try {
             if(!active)releaseModels();
-            else if(rate>=8000&&(selectedEffect!=requestedEffect(processSetup.processMode)||!warmup))
+            else if(rate>=8000&&(selectedEffect!=requestedEffect(processSetup.processMode)||selectedChannels!=channelChoice.load()||!warmup))
                 prepare(rate,maxBlock,processSetup.processMode);
             resetPending=true;haveTime=false;
         }
@@ -208,10 +233,14 @@ public:
     }
     tresult PLUGIN_API setState(IBStream* stream) override {
         State next;if(!next.read(stream)) return kResultFalse;
-        state=next;qualityChoice.store(next.quality);return kResultOk;
+        state=next;qualityChoice.store(next.quality);channelChoice.store(next.channelMode);return kResultOk;
     }
-    tresult PLUGIN_API getState(IBStream* stream) override {auto copy=state;copy.quality=qualityChoice.load();return copy.write(stream)?kResultOk:kResultFalse;}
+    tresult PLUGIN_API getState(IBStream* stream) override {auto copy=state;copy.quality=qualityChoice.load();copy.channelMode=channelChoice.load();return copy.write(stream)?kResultOk:kResultFalse;}
     tresult PLUGIN_API notify(IMessage* message) override {
+        if constexpr(Kind==3||Kind==4)if(message&&message->getMessageID()&&!std::strcmp(message->getMessageID(),"4x4ToolsChannels")){
+            int64 selected{};if(message->getAttributes()->getInt("channels",selected)==kResultOk&&selected>=0&&selected<=1){channelChoice.store(static_cast<int>(selected));return kResultOk;}
+            return kResultFalse;
+        }
         if constexpr(Kind==4)if(message&&message->getMessageID()&&!std::strcmp(message->getMessageID(),"4x4ToolsQuality")) {
             int64 quality{};if(message->getAttributes()->getInt("quality",quality)==kResultOk&&quality>=0&&quality<=2){qualityChoice.store(static_cast<int>(quality));return kResultOk;}
             return kResultFalse;
@@ -225,6 +254,9 @@ public:
         else if(event.id==Gain) state.gain=value;
         else if(event.id==Bypass) state.bypass=value>=.5;
         else if(event.id==Quality&&Kind==4) qualityChoice.store(static_cast<int>(std::lround(value*2)));
+        else if(event.id==Channels&&(Kind==3||Kind==4))channelChoice.store(value>=.5?1:0);
+        else if(event.id==MatchLevel&&(Kind==3||Kind==4))state.matchLevel=value>=.5;
+        else if(event.id==Strength&&Kind<3)state.strength=value;
         else if constexpr(Kind==3) if(event.id==Profile) {
             const int profile=static_cast<int>(std::lround(value*6));
             state.profile=profile;
@@ -275,9 +307,11 @@ public:
                 if(current) {
                     if(current!=observedPipeline) {
                         if(current->latency()!=latency)throw std::runtime_error("Prepared voice latency changed unexpectedly.");
-                        observedPipeline=current;warmFrames=0;appliedProfile=-999;
+                        observedPipeline=current;warmFrames=0;appliedProfile=-999;appliedStrength=-1;
                     }
                     if(appliedProfile!=state.profile) {current->profile(state.profile-1);appliedProfile=state.profile;}
+                    current->matchLevel(state.matchLevel!=0);
+                    if constexpr(Kind<3)if(appliedStrength!=float(state.strength)){current->intensity(float(state.strength));appliedStrength=float(state.strength);}
                     current->process(in,out,count,static_cast<float>(state.mix),static_cast<float>(state.gain*36-24),state.bypass!=0);
                 }
                 const float gain=static_cast<float>(std::pow(10.,(state.gain*36-24)/20));
@@ -294,7 +328,7 @@ public:
                     }
                     for(int c=0;c<channels;++c) {
                         const float fallback=dry[c]*gain;
-                        data.outputs[0].channelBuffers32[c][position+i]=ready>0?fallback+ready*(wetScratch[c][i]-fallback):fallback;
+                        data.outputs[0].channelBuffers32[c][position+i]=ready>=1?wetScratch[c][i]:ready>0?fallback+ready*(wetScratch[c][i]-fallback):fallback;
                     }
                 }
                 position+=count;

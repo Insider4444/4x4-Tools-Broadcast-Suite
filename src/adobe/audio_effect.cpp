@@ -3,6 +3,7 @@
 #include "AE_EffectCB.h"
 #include "AE_Macros.h"
 #include "Param_Utils.h"
+#include "slider.h"
 #include "entry.h"
 #include "EffectSpec.h"
 #include "core/audio_pipeline.h"
@@ -21,8 +22,9 @@
 
 using namespace fourbyfour;
 namespace {
-enum Param { Input,Enabled,Mix,Gain,Profile,Quality,Monitor,Count };
+enum Param { Input,Enabled,Mix,Gain,Profile,Quality,Monitor,Channels,MatchLevel,Strength,Count };
 constexpr auto kind=static_cast<AudioEffect>(FOUR_VIDEO_KIND);
+constexpr bool studio=kind==AudioEffect::studioPreview||kind==AudioEffect::studioQuality;
 struct Range { A_long first{},last{},window{}; };
 Range sourceRange(PF_InData* in) {
     const double rate=in->src_snd.fi.rateF;
@@ -38,28 +40,33 @@ Range sourceRange(PF_InData* in) {
 std::mutex mutex;
 std::unique_ptr<AudioPipeline> pipeline;
 int pipelineRate{},pipelineChannels{},pipelineProfile{-99};
+int pipelineMode{-1};
+float pipelineStrength{-1};
 AudioEffect pipelineEffect{};
 std::uintptr_t pipelineOwner{};
 struct Cache { std::uint64_t hash{};std::vector<float> samples; };
 std::deque<Cache> cache;
-std::uint64_t hashInput(std::span<const float> data,int rate,int channels,int profile,A_long windowOffset) {
+std::uint64_t hashInput(std::span<const float> data,int rate,int channels,int profile,A_long windowOffset,float strength) {
     std::uint64_t result=14695981039346656037ull;
     auto append=[&](const void* pointer,std::size_t bytes) {
         const auto* p=static_cast<const unsigned char*>(pointer);
         for(std::size_t i=0;i<bytes;++i) {result^=p[i];result*=1099511628211ull;}
     };
     append(data.data(),data.size_bytes());append(&rate,sizeof(rate));append(&channels,sizeof(channels));append(&profile,sizeof(profile));append(&windowOffset,sizeof(windowOffset));
+    append(&strength,sizeof(strength));
     return result;
 }
-std::vector<float> window(std::span<const float> data,int rate,int channels,int profile,A_long crop,A_long length,AudioEffect selected,std::uintptr_t owner) {
-    const auto hash=hashInput(data,rate,channels,profile,crop)^static_cast<std::uint64_t>(selected);
+std::vector<float> window(std::span<const float> data,int rate,int channels,int profile,A_long crop,A_long length,AudioEffect selected,std::uintptr_t owner,int mode,bool match,float strength) {
+    const auto hash=hashInput(data,rate,channels,profile,crop,strength)^static_cast<std::uint64_t>(selected)^(std::uint64_t(mode)<<8)^(std::uint64_t(match)<<9);
     for(const auto& item:cache) if(item.hash==hash&&item.samples.size()==static_cast<std::size_t>(length)*channels) {processing::finish(7+FOUR_VIDEO_KIND,L"Ready · reused cached audio");return item.samples;}
-    if(!pipeline||pipelineRate!=rate||pipelineChannels!=channels||pipelineProfile!=profile||pipelineEffect!=selected) {
+    if(!pipeline||pipelineRate!=rate||pipelineChannels!=channels||pipelineProfile!=profile||pipelineEffect!=selected||pipelineMode!=mode) {
         pipeline.reset();cache.clear();
-        pipeline=std::make_unique<AudioPipeline>(AudioSettings{selected,channels,profile,7+FOUR_VIDEO_KIND},rate);
+        pipeline=std::make_unique<AudioPipeline>(AudioSettings{selected,channels,profile,7+FOUR_VIDEO_KIND,static_cast<AudioChannelMode>(mode),match,strength},rate);
         pipelineRate=rate;pipelineChannels=channels;pipelineProfile=profile;
-        pipelineEffect=selected;
+        pipelineEffect=selected;pipelineMode=mode;pipelineStrength=strength;
     } else pipeline->reset();
+    pipeline->matchLevel(match);
+    if(pipelineStrength!=strength){pipeline->intensity(strength);pipelineStrength=strength;}
     pipelineOwner=owner;
     constexpr int block=2048;
     std::array<std::array<float,block>,2> input{},output{};
@@ -108,14 +115,14 @@ PF_Err render(PF_InData* in,PF_OutData* out,PF_ParamDef* params[]) {
         const auto last=std::clamp<A_long>(contextEnd-sourceStart,first,src.num_samples);
         const auto available=std::span(source+static_cast<std::size_t>(first)*channels,static_cast<std::size_t>(last-first)*channels);
         const auto selected=kind==AudioEffect::studioQuality&&params[Quality]->u.pd.value==1?AudioEffect::studioPreview:kind;
-        const auto processed=window(available,rate,channels,profile,blockStart-contextStart,range.window,selected,reinterpret_cast<std::uintptr_t>(in->effect_ref));
+        const auto processed=window(available,rate,channels,profile,blockStart-contextStart,range.window,selected,reinterpret_cast<std::uintptr_t>(in->effect_ref),studio&&params[Channels]->u.pd.value==2?1:0,studio&&params[MatchLevel]->u.bd.value!=0,FOUR_VIDEO_KIND<3?static_cast<float>(params[Strength]->u.fs_d.value/100):1.f);
         const A_long within=absolute-blockStart,count=std::min(outputFrames-offset,range.window-within);
         for(A_long i=0;i<count;++i) for(int c=0;c<channels;++c) {
             const auto target=static_cast<std::size_t>(offset+i)*channels+c;
             const auto dryFrame=absolute+i-sourceStart;
             const float dry=dryFrame>=0&&dryFrame<src.num_samples?source[static_cast<std::size_t>(dryFrame)*channels+c]:0.f;
             const float wet=processed[(static_cast<std::size_t>(within)+i)*channels+c];
-            destination[target]=(dry+mix*(wet-dry))*gain;
+            destination[target]=(mix==1?wet:dry+mix*(wet-dry))*gain;
         }
         offset+=count;
     }
@@ -123,8 +130,8 @@ PF_Err render(PF_InData* in,PF_OutData* out,PF_ParamDef* params[]) {
 }
 PF_Err parameters(PF_InData* in_data,PF_OutData* out_data) {
     PF_ParamDef def{};PF_ADD_CHECKBOX("Voice Effect","Enabled",true,0,Enabled);
-    def={};PF_ADD_FLOAT_SLIDERX("Mix",0,100,0,100,100,1,PF_ValueDisplayFlag_PERCENT,PF_ParamFlag_CANNOT_TIME_VARY,Mix);
-    def={};PF_ADD_FLOAT_SLIDERX("Output Gain",-24,12,-12,6,0,2,PF_ValueDisplayFlag_NONE,PF_ParamFlag_CANNOT_TIME_VARY,Gain);
+    def={};FOUR_ADD_FLOAT_SLIDERX("Mix",0,100,0,100,100,1,PF_ValueDisplayFlag_PERCENT,PF_ParamFlag_CANNOT_TIME_VARY,Mix);
+    def={};FOUR_ADD_FLOAT_SLIDERX("Output Gain",-24,12,-12,6,0,2,PF_ValueDisplayFlag_NONE,PF_ParamFlag_CANNOT_TIME_VARY,Gain);
     def={};if(kind!=AudioEffect::studioPreview) def.ui_flags=PF_PUI_INVISIBLE;
     def.flags=PF_ParamFlag_CANNOT_TIME_VARY;
     PF_ADD_POPUP("Microphone Character",7,1,"Natural|Bright|Vibrant|Flat|Full|Thin|Warm",Profile);
@@ -135,6 +142,19 @@ PF_Err parameters(PF_InData* in_data,PF_OutData* out_data) {
     def.u.pd.u.PF_DEF_NAMESPTR="Interactive Preview|Highest Quality (Render)";def.uu.id=Quality;
     {const auto error=PF_ADD_PARAM(in_data,-1,&def);if(error)return error;}
     PF_ADD_BUTTON("Processing Monitor","Status and Quality…",PF_PUI_STD_CONTROL_ONLY,PF_ParamFlag_SUPERVISE,Monitor);
+    def={};def.flags=PF_ParamFlag_CANNOT_TIME_VARY|PF_ParamFlag_USE_VALUE_FOR_OLD_PROJECTS;
+    if(!studio)def.ui_flags=PF_PUI_INVISIBLE;
+    def.param_type=PF_Param_POPUP;PF_STRNNCPY(def.PF_DEF_NAME,"Voice Channels",sizeof(def.PF_DEF_NAME));
+    def.u.pd.num_choices=2;def.u.pd.dephault=studio?2:1;def.u.pd.value=1;
+    def.u.pd.u.PF_DEF_NAMESPTR="Independent stereo|Dialogue (centred voice)";def.uu.id=Channels;
+    {const auto error=PF_ADD_PARAM(in_data,-1,&def);if(error)return error;}
+    def={};if(!studio)def.ui_flags=PF_PUI_INVISIBLE;
+    def.flags=PF_ParamFlag_CANNOT_TIME_VARY|PF_ParamFlag_USE_VALUE_FOR_OLD_PROJECTS;
+    def.param_type=PF_Param_CHECKBOX;PF_STRNNCPY(def.PF_DEF_NAME,"Level",sizeof(def.PF_DEF_NAME));
+    def.u.bd.u.PF_DEF_NAMEPTR="Match input level";def.u.bd.dephault=studio;def.u.bd.value=FALSE;def.uu.id=MatchLevel;
+    {const auto error=PF_ADD_PARAM(in_data,-1,&def);if(error)return error;}
+    def={};if(FOUR_VIDEO_KIND>=3)def.ui_flags=PF_PUI_INVISIBLE;
+    FOUR_ADD_FLOAT_SLIDERX("Suppression",0,100,0,100,100,1,PF_ValueDisplayFlag_PERCENT,PF_ParamFlag_CANNOT_TIME_VARY,Strength);
     out_data->num_params=Count;return PF_Err_NONE;
 }
 }

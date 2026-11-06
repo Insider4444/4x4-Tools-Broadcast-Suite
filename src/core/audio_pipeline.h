@@ -1,5 +1,6 @@
 #pragma once
 #include "nvidia/audio_effects.h"
+#include "audio_level.h"
 #include <array>
 #include <cstdint>
 #include <deque>
@@ -26,7 +27,9 @@ public:
 };
 class AudioPipeline {
     AudioEngine engine;
-    int rate,channelCount,delay,modelDelay;
+    int rate,channelCount,modelChannels,delay,modelDelay;
+    bool dialogue,matchInputLevel;
+    AudioLevelMatch levelMatch;
     AudioResampler inputConverter,outputConverter;
     std::vector<std::vector<float>> input,output;
     std::array<const float*,2> inputs{};
@@ -44,6 +47,8 @@ public:
     int sdkInputRate() const { return engine.inputRate(); }
     void reset();
     void profile(int id) { engine.profile(id); }
+    void matchLevel(bool enabled) { matchInputLevel=enabled; }
+    void intensity(float value) { engine.intensity(value); }
     void process(const float* const* in,float* const* out,int frames,float mix=1,float gainDb=0,bool bypass=false);
 };
 // Interleaved offline processing, with adapter delay removed and a zero-padded

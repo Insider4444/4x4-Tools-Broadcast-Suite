@@ -3,6 +3,8 @@
 #include "pluginterfaces/vst/ivstcomponent.h"
 #include "pluginterfaces/vst/ivstaudioprocessor.h"
 #include "public.sdk/source/vst/hosting/parameterchanges.h"
+#include "public.sdk/source/common/memorystream.h"
+#include "base/source/fstreamer.h"
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -18,6 +20,13 @@ void require(bool condition,const char* message) {if(!condition)throw std::runti
 void noModels() {
     require(!GetModuleHandleW(L"NVAudioEffects.dll"),"Host probing loaded the NVIDIA audio runtime");
     require(!GetModuleHandleW(L"nvcuda.dll"),"Host probing initialized CUDA");
+}
+void checkVoiceState(IComponent* component,bool dialogue) {
+    MemoryStream stream;require(component->getState(&stream)==kResultOk,"Cannot save voice state");
+    stream.seek(0,IBStream::kIBSeekSet,nullptr);IBStreamer reader(&stream,kLittleEndian);
+    int32 version{},profile{},bypass{},quality{},channels{},match{};double mix{},gain{},strength{};
+    require(reader.readInt32(version)&&version==4&&reader.readDouble(mix)&&reader.readDouble(gain)&&reader.readInt32(profile)&&reader.readInt32(bypass)&&reader.readInt32(quality)&&reader.readInt32(channels)&&reader.readInt32(match)&&reader.readDouble(strength)&&strength==1,"Voice state is truncated or changed suppression");
+    require(channels==(dialogue?1:0)&&match==(dialogue?1:0),"Voice routing/level state did not persist");
 }
 int wmain(int argc,wchar_t** argv) {
     try {
@@ -42,6 +51,13 @@ int wmain(int argc,wchar_t** argv) {
             IComponent* component{};
             require(factory->createInstance(info.cid,IComponent::iid,reinterpret_cast<void**>(&component))==kResultOk,"Cannot create processor");
             require(component->initialize(nullptr)==kResultOk,"Processor initialization failed");
+            const bool studio=!std::strcmp(info.name,"4x4 Studio Voice Preview")||!std::strcmp(info.name,"4x4 Studio Voice HQ");
+            checkVoiceState(component,studio);
+            // A version-two project must keep independent channels and its
+            // original volume instead of silently adopting new defaults.
+            MemoryStream legacy;IBStreamer writer(&legacy,kLittleEndian);
+            writer.writeInt32(2);writer.writeDouble(1);writer.writeDouble(2./3.);writer.writeInt32(0);writer.writeInt32(0);writer.writeInt32(0);
+            legacy.seek(0,IBStream::kIBSeekSet,nullptr);require(component->setState(&legacy)==kResultOk,"Legacy voice state no longer opens");checkVoiceState(component,false);
             IAudioProcessor* processor{};
             require(component->queryInterface(IAudioProcessor::iid,reinterpret_cast<void**>(&processor))==kResultOk,"No audio processor interface");
             if(!std::strcmp(info.name,"4x4 Studio Voice HQ")) {

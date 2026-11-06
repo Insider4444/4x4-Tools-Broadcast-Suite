@@ -18,7 +18,7 @@
 
 using namespace fourbyfour;
 enum Parameter { Input, Enabled, Strength, EyeSize, Compare, ParameterCount };
-static_assert(FOUR_VERSION == PF_VERSION(0, 2, 1, PF_Stage_DEVELOP, 2));
+static_assert(FOUR_VERSION == PF_VERSION(0, 2, 1, PF_Stage_DEVELOP, 4));
 static_assert(FOUR_FLAGS == PF_OutFlag_DEEP_COLOR_AWARE);
 static_assert(FOUR_FLAGS2 == PF_OutFlag2_SUPPORTS_THREADED_RENDERING);
 static bool premiere(const PF_InData* in) { return in && in->appl_id == 'PrMr'; }
@@ -83,7 +83,7 @@ extern "C" DllExport PF_Err EffectMain(PF_Cmd command, PF_InData* in_data, PF_Ou
         switch (command) {
         case PF_Cmd_ABOUT:
             if (!out_data) return PF_Err_BAD_CALLBACK_PARAM;
-            std::strcpy(out_data->return_msg, "4x4 Eye Contact 0.2.0\rNVIDIA-accelerated gaze correction.\r4x4Tools community release; single subject; SDR model processing.");
+            std::strcpy(out_data->return_msg, "4x4 Eye Contact 0.2.1\rNVIDIA-accelerated gaze correction.\r4x4Tools; single subject; SDR model processing.");
             break;
         case PF_Cmd_GLOBAL_SETUP:
             if (!out_data || !in_data) return PF_Err_BAD_CALLBACK_PARAM;

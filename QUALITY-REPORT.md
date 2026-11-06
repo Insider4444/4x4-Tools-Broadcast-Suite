@@ -19,7 +19,7 @@ Private model outputs, licensed media and NVIDIA performance/regression data are
 
 Highest Quality requests neighboring frames explicitly and resets history between independent render windows. Matte refinement works on uncertain boundaries and combines source alpha correctly. Denoising uses overlapping tiles for larger frames. Exact proxy comparisons preserve untouched high-precision source values.
 
-Voice processors use independent channel state, band-limited resampling, reported latency and a padded final block. Native AE audio uses fixed windows with pre-roll. Studio Voice HQ is an offline path with six-second model blocks. NVIDIA supplies the learned models; these choices concern host integration.
+Voice processors use independent channel state or Studio Voice's single-model Dialogue mode, band-limited resampling, reported latency and a padded final block. Optional input-level matching only attenuates the wet signal. Native AE audio uses fixed windows with pre-roll. Studio Voice HQ is an offline path with six-second model blocks. NVIDIA supplies the learned models; these choices concern host integration.
 
 ## Remaining acceptance work
 
@@ -35,7 +35,7 @@ Harnesses and filesystem fixtures do not establish completion of these items. Au
 
 ## Known limitations
 
-Video models use SDR proxies. The new adapters accept AE 8/16/32 bpc and Premiere 8/32-bit BGRA, but they are not HDR/log-aware. Eye Contact supports AE 8/16 bpc; its AE 32-bpc adapter is not implemented. Use SDR for this release.
+Video models use SDR proxies. The new adapters accept AE 8/16/32 bpc and Premiere 8/32-bit BGRA. Studio Light adds an explicit Apple Log 1 / Rec.2020 input path: bounded inference images convert to SDR, while the lighting correction is applied to source pixels in linear light and returned in the source encoding. This is not general HDR/Log support; Apple Log 2, S-Log3, HLG/PQ and arbitrary wide-gamut/linear working spaces are not covered. Other effects should receive SDR. Eye Contact supports AE 8/16 bpc; its AE 32-bpc adapter is not implemented.
 
 Eye Contact/Auto Frame target a single person. Detail Restore retains Adobe frame dimensions. Studio Voice can change timing and waveform phase; nominal latency compensation cannot make parallel dry/wet mixing phase-exact. Begin with 100% wet.
 

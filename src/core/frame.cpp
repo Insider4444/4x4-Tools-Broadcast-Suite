@@ -87,7 +87,7 @@ void applyBgrDelta(const Frame& input, const Frame& output,
         }
     }
 }
-std::vector<float> toBgrFloat(const Frame& frame) {
+std::vector<float> toBgrFloat(const Frame& frame,bool sdr) {
     validate(frame);
     std::vector<float> result(static_cast<std::size_t>(frame.width) * frame.height * 3);
     const int alpha = frame.layout == PixelLayout::bgra8 || frame.layout == PixelLayout::bgra32f ? 3 : 0;
@@ -101,7 +101,8 @@ std::vector<float> toBgrFloat(const Frame& frame) {
             const auto a=_mm_shuffle_ps(v,v,_MM_SHUFFLE(3,3,3,3));
             v=_mm_div_ps(v,a);
             const auto valid=_mm_and_ps(_mm_cmpgt_ps(a,_mm_set1_ps(1.e-6f)),_mm_cmple_ps(_mm_and_ps(v,absolute),maximum));
-            v=_mm_and_ps(valid,_mm_min_ps(one,_mm_max_ps(zero,v)));
+            if(sdr)v=_mm_min_ps(one,_mm_max_ps(zero,v));
+            v=_mm_and_ps(valid,v);
             auto* target=result.data()+(static_cast<std::size_t>(y)*frame.width+x)*3;
             _mm_storel_epi64(reinterpret_cast<__m128i*>(target),_mm_castps_si128(v));
             _mm_store_ss(target+2,_mm_shuffle_ps(v,v,_MM_SHUFFLE(2,2,2,2)));
@@ -113,7 +114,7 @@ std::vector<float> toBgrFloat(const Frame& frame) {
         const float a = read(p, frame.layout, alpha);
         for (int c = 0; c < 3; ++c) {
             float v = a > 1.e-6f ? read(p,frame.layout,channel(frame.layout,c)) / a : 0.f;
-            result[(static_cast<std::size_t>(y) * frame.width + x) * 3 + c] = std::isfinite(v) ? std::clamp(v,0.f,1.f) : 0.f;
+            result[(static_cast<std::size_t>(y) * frame.width + x) * 3 + c] = std::isfinite(v) ? (sdr?std::clamp(v,0.f,1.f):v) : 0.f;
         }
     }
     return result;

@@ -15,15 +15,20 @@ int wmain(int argc,wchar_t** argv) {
     try {
         const bool visible=argc>1&&std::wstring(argv[1])==L"--preview";
         WNDCLASSW cls{};cls.lpfnWndProc=parentProc;cls.hInstance=GetModuleHandleW(nullptr);cls.lpszClassName=L"4x4ToolsProcessingFixture";RegisterClassW(&cls);
-        RECT bounds{0,0,600,488};AdjustWindowRectEx(&bounds,WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,FALSE,WS_EX_NOACTIVATE);
+        RECT bounds{0,0,600,560};AdjustWindowRectEx(&bounds,WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,FALSE,WS_EX_NOACTIVATE);
         parent=CreateWindowExW(WS_EX_NOACTIVATE,cls.lpszClassName,L"4x4Tools · Processing panel preview",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|(visible?WS_VISIBLE:0),80,80,bounds.right-bounds.left,bounds.bottom-bounds.top,nullptr,nullptr,cls.hInstance,nullptr);
         require(parent,"Cannot create panel host");int quality=-1,events=0;
         ui::Controls controls;controls.effect=11;controls.voice=true;controls.qualityChoice=true;controls.quality=0;controls.mix=.8;controls.gainDb=-1.5;
-        controls.changed=[&](int id,double value){++events;if(id==0)quality=static_cast<int>(value);};
+        controls.channelChoice=true;controls.channelMode=1;controls.matchLevel=true;controls.strengthChoice=true;
+        double strength=-1;controls.changed=[&](int id,double value){++events;if(id==0)quality=static_cast<int>(value);if(id==7)strength=value;};
         const auto panel=ui::createPanel(parent,controls);require(panel,"Cannot create processing panel");
         if(visible)ShowWindow(parent,SW_SHOWNOACTIVATE);
         const auto choice=GetDlgItem(panel,101);SendMessageW(choice,CB_SETCURSEL,1,0);SendMessageW(panel,WM_COMMAND,MAKEWPARAM(101,CBN_SELCHANGE),reinterpret_cast<LPARAM>(choice));
         require(quality==1&&events==1,"Native quality selection did not reach the host callback");
+        require(SendMessageW(GetDlgItem(panel,107),CB_GETCURSEL,0,0)==1&&SendMessageW(GetDlgItem(panel,108),BM_GETCHECK,0,0)==BST_CHECKED,"Voice routing/level controls lost their defaults");
+        const auto suppression=GetDlgItem(panel,109);require(suppression&&SendMessageW(suppression,TBM_GETPOS,0,0)==100,"Suppression slider has no default");
+        SendMessageW(suppression,TBM_SETPOS,TRUE,37);SendMessageW(panel,WM_HSCROLL,0,reinterpret_cast<LPARAM>(suppression));
+        require(strength==.37,"Suppression slider did not reach its parameter callback");
         processing::begin(11,L"Interactive Preview");processing::report(11,L"Preparing the selected voice model…",1,3);
         processing::Status status;require(processing::read(11,status)&&status.active&&status.percent==33,"Processing progress was not shared");
         SendMessageW(panel,WM_COMMAND,105,0);require(processing::cancelled(11),"Cancellation did not reach the model status");

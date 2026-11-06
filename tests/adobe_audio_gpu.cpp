@@ -13,9 +13,9 @@
 #include <vector>
 using Main=PF_Err (*)(PF_Cmd,PF_InData*,PF_OutData*,PF_ParamDef*[],PF_LayerDef*,void*);
 namespace {
-std::array<PF_ParamDef,7> controls{};
+std::array<PF_ParamDef,10> controls{};
 void require(bool value,const char* message) {if(!value) throw std::runtime_error(message);}
-PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* value) {if(index!=-1||value->uu.id<1||value->uu.id>=7) return 999;controls[value->uu.id]=*value;return 0;}
+PF_Err add(PF_ProgPtr,PF_ParamIndex index,PF_ParamDef* value) {if(index!=-1||value->uu.id<1||value->uu.id>=10) return 999;controls[value->uu.id]=*value;return 0;}
 PF_Err abortRender(PF_ProgPtr) {return 0;}
 }
 int wmain(int argc,wchar_t** argv) {
@@ -34,7 +34,7 @@ int wmain(int argc,wchar_t** argv) {
             in.total_sampL=count;in.src_snd.fi={48000,2,PF_SIGNED_FLOAT,PF_SSS_4};
             require(!main(PF_Cmd_GLOBAL_SETUP,&in,&out,nullptr,nullptr,nullptr),"Audio setup failed");
             controls={};require(!main(PF_Cmd_PARAMS_SETUP,&in,&out,nullptr,nullptr,nullptr),"Audio parameter setup failed");
-            std::array<PF_ParamDef*,7> params{};for(int i=0;i<7;++i) params[i]=&controls[i];
+            std::array<PF_ParamDef*,10> params{};for(int i=0;i<10;++i) params[i]=&controls[i];
             auto render=[&](int start,int frames) {
                 in.start_sampL=start;in.dur_sampL=frames;
                 auto error=main(PF_Cmd_AUDIO_SETUP,&in,&out,params.data(),nullptr,nullptr);if(error) throw std::runtime_error(out.return_msg);
@@ -46,13 +46,24 @@ int wmain(int argc,wchar_t** argv) {
                 error=main(PF_Cmd_AUDIO_RENDER,&in,&out,params.data(),nullptr,nullptr);if(error) throw std::runtime_error(out.return_msg);
                 for(std::size_t i=static_cast<std::size_t>(frames)*2;i<result.size();++i) require(result[i]==12345.f,"AE audio overwrote its output buffer");
                 result.resize(static_cast<std::size_t>(frames)*2);
-                for(std::size_t i=0;i<result.size();++i) {require(std::isfinite(result[i]),"Non-finite AE audio sample");if(i%2) require(result[i]==0,"AE audio introduced sound into a silent channel");}
+                for(std::size_t i=0;i<result.size();++i) {require(std::isfinite(result[i]),"Non-finite AE audio sample");if(i%2)require(std::abs(result[i]-(controls[7].u.pd.value==2?result[i-1]:0))<1.e-7f,"AE voice channel routing changed");}
                 return result;
             };
             const int frames=std::min(count,48000*6+10017);
             const auto whole=render(0,frames),a=render(0,7001),b=render(7001,frames-7001);
             require(std::equal(a.begin(),a.end(),whole.begin())&&std::equal(b.begin(),b.end(),whole.begin()+a.size()),"AE render request boundaries change the audio");
             double energy=0;for(float value:whole) energy+=double(value)*value;require(energy>.001,"AE voice output is silent");
+            if(std::wstring(name)==L"NoiseClean"||std::wstring(name)==L"RoomEchoClean"||std::wstring(name)==L"VoiceClean"){
+                controls[9].u.fs_d.value=50;const auto half=render(0,frames);double difference=0;
+                for(std::size_t i=0;i<whole.size();++i)difference+=std::abs(half[i]-whole[i]);
+                require(difference/whole.size()>1.e-7,"Suppression slider did not change the processed audio");
+                controls[9].u.fs_d.value=100;
+            }
+            if(std::wstring(name)==L"StudioVoicePreview"||std::wstring(name)==L"StudioVoiceHQ"){
+                controls[7].u.pd.value=2;controls[8].u.bd.value=TRUE;
+                const auto dialogue=render(0,frames),first=render(0,7001),last=render(7001,frames-7001);
+                require(std::equal(first.begin(),first.end(),dialogue.begin())&&std::equal(last.begin(),last.end(),dialogue.begin()+first.size()),"AE dialogue matching changed at a request boundary");
+            }
             std::wcout<<name<<L": stereo audio, context checkout, split-request consistency, silence isolation and buffer bounds passed.\n";
             main(PF_Cmd_GLOBAL_SETDOWN,&in,&out,nullptr,nullptr,nullptr);FreeLibrary(module);module=nullptr;
         }
